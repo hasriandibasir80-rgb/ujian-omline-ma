@@ -4,6 +4,7 @@
  * Menghandle logika tampilan, sinkronisasi Firestore, dan interaksi UI
  * 
  * ✅ UPDATE: Menambahkan fitur Log Aktivitas, Rekap Nilai, Kelola Kelas
+ * ✅ UPDATE: Sidebar toggle, aksesibilitas modal, toast CSS class
  * ✅ PRINSIP: Semua fungsi lama dipertahankan, hanya additive changes
  */
 
@@ -115,7 +116,7 @@ async function loadActiveExams() {
             </div>
         `).join('');
     } else {
-        container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Tidak ada ujian aktif saat ini.</p>';
+        container.innerHTML = '<p class="empty-state">Tidak ada ujian aktif saat ini.</p>';
     }
 }
 
@@ -124,7 +125,7 @@ function setupRealtimeMonitoring() {
 
     monitorSiswaUjian((students) => {
         if (students.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Belum ada siswa yang sedang mengerjakan ujian.</p>';
+            container.innerHTML = '<p class="empty-state">Belum ada siswa yang sedang mengerjakan ujian.</p>';
             return;
         }
 
@@ -132,20 +133,21 @@ function setupRealtimeMonitoring() {
             const total = student.totalSoal || 20;
             const current = student.progress || 0;
             const percent = Math.min((current / total) * 100, 100);
-            const barColor = percent >= 80 ? '#10b981' : (percent >= 40 ? '#3b82f6' : '#f59e0b');
-            const dotColor = percent >= 80 ? 'green' : (percent >= 40 ? 'blue' : 'yellow');
+            // ✅ ADDITIVE: Gunakan CSS class untuk warna, bukan inline style
+            const percentClass = percent >= 80 ? 'progress-high' : (percent >= 40 ? 'progress-medium' : 'progress-low');
+            const dotClass = percent >= 80 ? 'green' : (percent >= 40 ? 'blue' : 'yellow');
 
             return `
                 <div class="student-row">
                     <div class="student-info">
-                        <span class="dot ${dotColor}"></span>
+                        <span class="dot ${dotClass}"></span>
                         <span>${student.namaSiswa || 'Siswa'}</span>
                         <small>${student.namaUjian || 'Ujian'}</small>
                     </div>
                     <div class="progress-wrap">
                         <span>${current}/${total} soal</span>
                         <div class="progress-bar">
-                            <div class="fill" style="width: ${percent}%; background: ${barColor};"></div>
+                            <div class="fill ${percentClass}" style="width: ${percent}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -186,6 +188,35 @@ function setupUIHandlers() {
             if (text.includes('Monitoring')) window.location.href = 'admin/monitoring-live.html';
         });
     });
+
+    // ✅ ADDITIVE: Sidebar Toggle Handler untuk Mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            sidebarToggle.setAttribute('aria-expanded', !isCollapsed);
+            // Simpan preferensi user di localStorage
+            try {
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            } catch (e) {
+                console.warn('LocalStorage tidak tersedia:', e);
+            }
+        });
+        
+        // Restore state dari localStorage saat load
+        try {
+            const saved = localStorage.getItem('sidebarCollapsed');
+            if (saved === 'true') {
+                sidebar.classList.add('collapsed');
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+            }
+        } catch (e) {
+            console.warn('Gagal membaca localStorage:', e);
+        }
+    }
 }
 
 // ==========================================
@@ -231,24 +262,25 @@ function getStatusBadge(status) {
     return `<span class="badge badge-${cfg.class}">${cfg.text}</span>`;
 }
 
+// ✅ ADDITIVE: showToast menggunakan CSS class + aksesibilitas
 function showToast(message, type = 'info') {
-    // Simple toast notification (mobile-friendly)
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed; bottom: 20px; right: 20px;
-        padding: 12px 20px; border-radius: 8px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white; z-index: 9999; font-size: 0.9rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        animation: slideIn 0.3s ease;
-    `;
+    toast.setAttribute('role', 'alert'); // ✅ aksesibilitas
     document.body.appendChild(toast);
+    
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
+        toast.classList.add('toast-exit'); // ✅ gunakan class animasi dari CSS
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// ✅ ADDITIVE: Helper untuk progress bar colors (ganti inline style)
+function getProgressClass(percent) {
+    if (percent >= 80) return 'progress-high';
+    if (percent >= 40) return 'progress-medium';
+    return 'progress-low';
 }
 
 // ==========================================
@@ -280,7 +312,7 @@ async function loadActivityLog() {
             const counter = document.getElementById('log-count-info');
             if (counter) counter.textContent = `${res.data.length} entri`;
         } else {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Tidak ada log aktivitas</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Tidak ada log aktivitas</td></tr>`;
         }
     } catch (error) {
         console.error("Error loading activity log:", error);
@@ -334,7 +366,7 @@ async function loadGradeRecap() {
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Tidak ada data nilai</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Tidak ada data nilai</td></tr>`;
             }
         }
     } catch (error) {
@@ -366,14 +398,14 @@ async function loadClassList() {
                         <p><i class="fas fa-users"></i> Siswa: <strong>${kelas.jumlahSiswa || 0}</strong></p>
                     </div>
                     <div class="class-card-footer">
-                        <button class="btn-sm btn-edit-kelas" data-id="${kelas.id}"><i class="fas fa-edit"></i></button>
-                        <button class="btn-sm btn-danger btn-delete-kelas" data-id="${kelas.id}"><i class="fas fa-trash"></i></button>
-                        <button class="btn-sm btn-info btn-lihat-siswa" data-id="${kelas.id}"><i class="fas fa-eye"></i></button>
+                        <button class="btn-sm btn-edit-kelas" data-id="${kelas.id}" aria-label="Edit kelas ${kelas.nama}"><i class="fas fa-edit"></i></button>
+                        <button class="btn-sm btn-danger btn-delete-kelas" data-id="${kelas.id}" aria-label="Hapus kelas ${kelas.nama}"><i class="fas fa-trash"></i></button>
+                        <button class="btn-sm btn-info btn-lihat-siswa" data-id="${kelas.id}" aria-label="Lihat siswa kelas ${kelas.nama}"><i class="fas fa-eye"></i></button>
                     </div>
                 </div>
             `).join('');
         } else {
-            grid.innerHTML = `<p class="text-center text-muted">Belum ada kelas terdaftar</p>`;
+            grid.innerHTML = `<p class="empty-state">Belum ada kelas terdaftar</p>`;
         }
     } catch (error) {
         console.error("Error loading classes:", error);
@@ -572,16 +604,26 @@ async function openEditKelasModal(id) {
     }
 }
 
-// Helper: Modal controls
+// ✅ ADDITIVE: Modal controls dengan aksesibilitas
 function openModal(modal) {
     modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    modal.hidden = false;
     document.body.style.overflow = 'hidden'; // Prevent scroll
+    
+    // Fokus ke elemen pertama yang bisa difokuskan di modal
+    const firstFocusable = modal.querySelector('input, button, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (firstFocusable) {
+        firstFocusable.focus();
+    }
 }
 
 function closeModal(modal) {
     modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.hidden = true;
     document.body.style.overflow = '';
+    
+    // Opsional: kembalikan fokus ke elemen yang membuka modal
+    // (perlu simpan reference ke trigger button jika diperlukan)
 }
-
-// ✅ Tambahkan CSS untuk toast & badge jika belum ada di dashboard.css
-// (Opsional: bisa ditambahkan via JS atau pastikan ada di CSS file)
