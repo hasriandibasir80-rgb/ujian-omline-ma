@@ -4,48 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ExamShield</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-        
-        // Your Firebase Config
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Export ke window agar bisa diakses dari script lain
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.setDoc = setDoc;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.query = query;
-        window.where = where;
-        window.getDocs = getDocs;
-    </script>
+    <!-- CSS: path ke folder css/ -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+
+    <!-- Toast Container (akan diisi oleh login.js) -->
+    <div id="toast-container"></div>
+
     <div class="login-container">
+        <!-- Logo & Header -->
         <div class="header">
             <div class="logo-icon">
                 <i class="fas fa-shield-alt"></i>
@@ -54,6 +26,7 @@
             <p>Sistem Ujian Online Anti-Curang</p>
         </div>
 
+        <!-- Role Selector -->
         <div class="role-tabs">
             <button class="tab-btn active" data-role="admin">
                 <i class="fas fa-crown"></i> Admin
@@ -66,10 +39,11 @@
             </button>
         </div>
 
+        <!-- Form Login -->
         <form id="loginForm">
             <div class="input-group">
-                <label for="username">USERNAME / EMAIL</label>
-                <input type="text" id="username" placeholder="Masukkan username atau email" autocomplete="off">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" placeholder="Masukkan username" autocomplete="off">
             </div>
 
             <div class="input-group">
@@ -80,6 +54,7 @@
                 </div>
             </div>
 
+            <!-- Error Message Container -->
             <div id="login-error" class="error-message hidden"></div>
 
             <button type="submit" class="btn-login">
@@ -87,141 +62,27 @@
             </button>
         </form>
 
+        <!-- Footer -->
         <div class="footer">
             <p>ExamShield v1.0 • Dilindungi enkripsi • Anti-curang aktif</p>
         </div>
     </div>
 
+    <!-- ✅ IMPORT LOGIN LOGIC (ES Module) -->
     <script type="module">
-        import { firebaseAuth, firebaseDb, signInWithEmailAndPassword, onAuthStateChanged, doc, getDoc } from './modules/firebase-config.js';
+        import { initLogin, checkExistingSession } from './js/login.js';
         
-        let selectedRole = 'admin';
-        
-        // Role selector
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedRole = btn.dataset.role;
-            });
-        });
-        
-        // Toggle password
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-        
-        // Login handler
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Jalankan inisialisasi setelah DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Opsional: auto-redirect jika session masih aktif
+            // checkExistingSession();
             
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorEl = document.getElementById('login-error');
-            
-            errorEl.classList.add('hidden');
-            
-            if (!username || !password) {
-                showError('Harap isi username/email dan password!');
-                return;
-            }
-            
-            try {
-                let email = username;
-                
-                // Jika admin login, pastikan format email
-                if (selectedRole === 'admin' && !username.includes('@')) {
-                    // Auto-append domain jika admin input username saja
-                    email = username.includes('@') ? username : `${username}@examshield.id`;
-                }
-                
-                // Login dengan Firebase Auth
-                const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-                const user = userCredential.user;
-                
-                // Ambil data user dari Firestore
-                const userDocRef = doc(firebaseDb, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                if (!userDoc.exists()) {
-                    await signOut(firebaseAuth);
-                    showError('Data user tidak ditemukan di database!');
-                    return;
-                }
-                
-                const userData = userDoc.data();
-                
-                // Validasi role
-                if (userData.role !== selectedRole) {
-                    await signOut(firebaseAuth);
-                    showError(`Role tidak sesuai! Anda terdaftar sebagai ${userData.role}.`);
-                    return;
-                }
-                
-                // Simpan session
-                sessionStorage.setItem('currentUser', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    role: userData.role,
-                    nama: userData.nama
-                }));
-                
-                // Redirect ke dashboard
-                showToast(`Selamat datang, ${userData.nama}!`);
-                setTimeout(() => {
-                    window.location.href = 'modules/dashboard.html';
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                let message = 'Login gagal! ';
-                
-                if (error.code === 'auth/user-not-found') {
-                    message += 'User tidak ditemukan.';
-                } else if (error.code === 'auth/wrong-password') {
-                    message += 'Password salah.';
-                } else if (error.code === 'auth/invalid-email') {
-                    message += 'Email tidak valid.';
-                } else if (error.code === 'auth/too-many-requests') {
-                    message += 'Terlalu banyak percobaan. Coba lagi nanti.';
-                } else {
-                    message += error.message;
-                }
-                
-                showError(message);
-            }
-        });
-        
-        function showError(msg) {
-            const errorEl = document.getElementById('login-error');
-            errorEl.textContent = msg;
-            errorEl.classList.remove('hidden');
-        }
-        
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px;
-                background: #10b981; color: white;
-                padding: 12px 20px; border-radius: 8px;
-                font-size: 14px; z-index: 9999;
-            `;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-        
-        // Check auth state
-        onAuthStateChanged(firebaseAuth, (user) => {
-            if (user) {
-                // User sudah login, redirect ke dashboard
-                window.location.href = 'modules/dashboard.html';
-            }
+            // Inisialisasi login logic
+            initLogin();
         });
     </script>
+    
+    <!-- Fallback untuk browser lama (opsional) -->
+    <script nomodule src="js/script.js"></script>
 </body>
 </html>
