@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 - Halaman Tidak Ditemukan | ExamShield</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0f1526;
+      --surface: #1a2238;
+      --border: #2a3554;
+      --accent: #4f8ef7;
+      --accent2: #6ee7b7;
+      --danger: #ef4444;
+      --text: #e8edf8;
+      --text2: #8b9bbf;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    .error-container {
+      max-width: 520px;
+      width: 100%;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .error-code {
+      font-size: 72px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, var(--danger), #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .error-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .error-desc {
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .error-hint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .error-hint code {
+      background: var(--bg2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent2);
+    }
+    .brand-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+      box-shadow: 0 8px 32px rgba(79,142,247,0.35);
+    }
+    .brand-name {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .brand-sub {
+      color: var(--text2);
+      font-size: 12px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Sora', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(79,142,247,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79,142,247,0.45);
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+    .btn-ghost:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .redirect-info {
+      font-size: 12px;
+      color: var(--text2);
+    }
+    .redirect-info strong {
+      color: var(--accent2);
+    }
+    .testing-badge {
+      display: inline-block;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+    @media (max-width: 480px) {
+      .error-code { font-size: 56px; }
+      .error-title { font-size: 20px; }
+      .btn-group { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <!-- Branding -->
+    <div class="brand-icon">🛡️</div>
+    <div class="brand-name">ExamShield</div>
+    <div class="brand-sub">Sistem Ujian Online Anti-Curang</div>
+
+    <!-- Error Content -->
+    <div class="error-code">404</div>
+    <div class="error-title">Halaman Tidak Ditemukan</div>
+    <p class="error-desc">
+      Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan. 
+      Periksa kembali URL atau gunakan navigasi di bawah ini.
+    </p>
+
+    <!-- Testing Hint (Hanya muncul di dev) -->
+    <div class="error-hint">
+      💡 <strong>Testing Tip:</strong> URL yang diakses: 
+      <code id="current-url"></code><br>
+      <span style="color:var(--accent);">✅ 404 page berhasil dimuat!</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-group">
+      <a href="/" class="btn btn-primary">🏠 Kembali ke Beranda</a>
+      <a href="/modules/dashboard.html" class="btn btn-ghost">📊 Buka Dashboard</a>
+    </div>
+
+    <!-- Redirect Info -->
+    <p class="redirect-info">
+      Atau tunggu <strong id="countdown">5</strong> detik untuk dialihkan otomatis ke beranda...
+    </p>
+
+    <!-- Testing Badge -->
+    <div class="testing-badge">🧪 404 PAGE — TESTING MODE</div>
+  </div>
+
+  <script>
+    // Tampilkan URL saat ini untuk debugging
+    document.getElementById('current-url').textContent = window.location.href;
+
+    // Auto-redirect ke beranda setelah 5 detik (opsional)
+    let seconds = 5;
+    const countdownEl = document.getElementById('countdown');
+    const redirectInterval = setInterval(() => {
+      seconds--;
+      countdownEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(redirectInterval);
+        // Redirect ke root (login page)
+        window.location.href = '/';
+      }
+    }, 1000);
+
+    // Hentikan redirect jika user sudah klik tombol
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', () => clearInterval(redirectInterval));
+    });
+  </script>
+</body>
+</html>
