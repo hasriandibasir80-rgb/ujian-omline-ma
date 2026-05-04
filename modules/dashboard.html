@@ -44,6 +44,11 @@
         <main class="main-content">
             <!-- Header -->
             <header class="top-bar">
+                <!-- ✅ ADDITIVE: Sidebar Toggle Button untuk Mobile -->
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
                 <h1><i class="fas fa-tachometer-alt"></i> Dashboard Admin</h1>
                 <p>Selamat datang! Pantau seluruh aktivitas ujian dari sini.</p>
             </header>
@@ -90,7 +95,8 @@
                     </div>
                     <div class="card-body">
                         <div id="monitoring-container">
-                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat data monitoring...</p>
+                            <!-- ✅ ADDITIVE: Ganti inline style dengan class -->
+                            <p class="empty-state">Memuat data monitoring...</p>
                         </div>
                     </div>
                 </div>
@@ -102,7 +108,8 @@
                     </div>
                     <div class="card-body">
                         <div id="active-exams-container">
-                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat ujian aktif...</p>
+                            <!-- ✅ ADDITIVE: Ganti inline style dengan class -->
+                            <p class="empty-state">Memuat ujian aktif...</p>
                         </div>
                     </div>
                 </div>
@@ -154,7 +161,7 @@
                                 <tbody id="activity-log-body">
                                     <!-- Data akan di-inject oleh dashboard.js -->
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted">Memuat log aktivitas...</td>
+                                        <td colspan="6" class="empty-state">Memuat log aktivitas...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -224,7 +231,7 @@
                                 <tbody id="grade-recap-body">
                                     <!-- Data akan di-inject oleh dashboard.js -->
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Memuat rekap nilai...</td>
+                                        <td colspan="7" class="empty-state">Memuat rekap nilai...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -256,7 +263,7 @@
                         <div id="class-list-grid" class="class-grid">
                             <!-- Card kelas akan di-render oleh dashboard.js -->
                             <div class="class-card placeholder">
-                                <p class="text-center text-muted">Memuat daftar kelas...</p>
+                                <p class="empty-state">Memuat daftar kelas...</p>
                             </div>
                         </div>
 
@@ -272,11 +279,12 @@
     </div>
 
     <!-- Modal: Tambah/Edit Kelas (Hidden by default) -->
-    <div id="modal-kelas" class="modal">
+    <!-- ✅ ADDITIVE: Tambahkan atribut aksesibilitas -->
+    <div id="modal-kelas" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-kelas-title" hidden>
         <div class="modal-content">
             <div class="modal-header">
                 <h4 id="modal-kelas-title">Tambah Kelas Baru</h4>
-                <button class="modal-close" id="modal-kelas-close">&times;</button>
+                <button class="modal-close" id="modal-kelas-close" aria-label="Tutup modal">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="form-kelas">
