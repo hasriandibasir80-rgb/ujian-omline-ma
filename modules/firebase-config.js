@@ -65,6 +65,93 @@ const db = getFirestore(app);
  * @param {string} password 
  * @returns {Promise}
  */
+// ==========================================
+// ✅ FUNGSI BARU: PENGATURAN & SEKOLAH
+// ==========================================
+
+/**
+ * Update Password User (Secure via Firebase Auth)
+ * @param {string} currentPassword - Password lama untuk verifikasi
+ * @param {string} newPassword - Password baru
+ */
+export const updateUserPassword = async (currentPassword, newPassword) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("User belum login");
+
+        // 1. Re-authenticate (Wajib untuk ganti password sensitif)
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+
+        // 2. Update Password
+        await updatePassword(user, newPassword);
+        return { success: true };
+    } catch (error) {
+        console.error(error);
+        // Handle error message yang lebih ramah
+        let msg = error.message;
+        if (error.code === 'auth/wrong-password') msg = "Password lama salah!";
+        return { success: false, error: msg };
+    }
+};
+
+/**
+ * Simpan Pengaturan Sistem (Anti-Curang, dll)
+ */
+export const saveSystemSettings = async (settings) => {
+    try {
+        await setDoc(doc(db, "settings", "system_config"), {
+            ...settings,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Ambil Pengaturan Sistem
+ */
+export const getSystemSettings = async () => {
+    try {
+        const docSnap = await getDoc(doc(db, "settings", "system_config"));
+        return { success: true, data: docSnap.exists() ? docSnap.data() : {} };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Simpan Profil Sekolah
+ */
+export const saveSchoolProfile = async (profile) => {
+    try {
+        await setDoc(doc(db, "school_info", "main"), {
+            ...profile,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Ambil Profil Sekolah
+ */
+export const getSchoolProfile = async () => {
+    try {
+        const docSnap = await getDoc(doc(db, "school_info", "main"));
+        return { success: true, data: docSnap.exists() ? docSnap.data() : {} };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// Import tambahan yang diperlukan di bagian paling atas file jika belum ada:
+// import { EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+// import { updatePassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 export const loginUser = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
