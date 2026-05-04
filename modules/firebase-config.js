@@ -2,7 +2,7 @@
  * ExamShield - Firebase Configuration
  * File ini mengatur koneksi ke Firebase (Authentication & Firestore)
  * 
- * PENTING: Ganti konfigurasi di bawah dengan kredensial dari proyek Firebase Anda
+ * ✅ UPDATE: Perbaikan syntax & penambahan fungsi CRUD user terintegrasi
  */
 
 // Import Firebase SDK (menggunakan CDN untuk kemudahan)
@@ -11,7 +11,9 @@ import {
     getAuth, 
     signInWithEmailAndPassword, 
     signOut, 
-    onAuthStateChanged 
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    updatePassword
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { 
     getFirestore, 
@@ -25,7 +27,10 @@ import {
     query, 
     where, 
     onSnapshot,
-    addDoc
+    addDoc,
+    orderBy,
+    limit,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 // ============================================
@@ -106,7 +111,7 @@ export const checkIfAdmin = async (uid) => {
 };
 
 // ============================================
-// 📊 FUNGSI FIRESTORE - USERS
+// 👥 FUNGSI FIRESTORE - USERS (UPDATE)
 // ============================================
 
 /**
@@ -117,7 +122,7 @@ export const getUserData = async (uid) => {
         const docRef = doc(db, "users", uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-            return { success: true, data: docSnap.data() };
+            return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
         }
         return { success: false, error: "User tidak ditemukan" };
     } catch (error) {
@@ -159,8 +164,53 @@ export const getAllSiswa = async () => {
     }
 };
 
+/**
+ * ✅ BARU: Buat user baru (Admin flow: Auth + Firestore)
+ * @param {string} email - Email untuk Firebase Auth
+ * @param {string} password - Password untuk Firebase Auth
+ * @param {object} userData - Data profil user untuk Firestore
+ * @returns {Promise}
+ */
+export const createNewUser = async (email, password, userData) => {
+    try {
+        // 1. Buat akun di Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        
+        // 2. Simpan data profil di Firestore dengan UID sebagai Document ID
+        await setDoc(doc(db, "users", uid), {
+            ...userData,
+            uid: uid,
+            email: email,
+            createdAt: serverTimestamp(),
+            isActive: true
+        });
+        
+        return { success: true, uid: uid, message: "User berhasil dibuat" };
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * ✅ BARU: Update password user via Firebase Auth
+ * @param {string} newPassword 
+ * @returns {Promise}
+ */
+export const updateUserPassword = async (newPassword) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Tidak ada user yang login");
+        await updatePassword(user, newPassword);
+        return { success: true, message: "Password berhasil diubah" };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 // ============================================
-// 📝 FUNGSI FIRESTORE - UJIAN
+// 📝 FUNGSI FIRESTORE - UJIAN (UPDATE)
 // ============================================
 
 /**
@@ -181,10 +231,11 @@ export const getAllUjian = async () => {
 
 /**
  * Ambil ujian yang sedang aktif
+ * ✅ PERBAIKAN: status 'aktif' (sesuai kode HTML) bukan 'active'
  */
 export const getActiveUjian = async () => {
     try {
-        const q = query(collection(db, "ujian"), where("status", "==", "active"));
+        const q = query(collection(db, "ujian"), where("status", "==", "aktif"));
         const querySnapshot = await getDocs(q);
         const activeUjian = [];
         querySnapshot.forEach((doc) => {
@@ -213,7 +264,7 @@ export const monitorSiswaUjian = (callback) => {
 };
 
 // ============================================
-// 📈 FUNGSI FIRESTORE - STATISTIK
+// 📈 FUNGSI FIRESTORE - STATISTIK (PERBAIKAN SYNTAX)
 // ============================================
 
 /**
@@ -230,41 +281,59 @@ export const countDocuments = async (collectionName) => {
 
 /**
  * Dapatkan statistik dashboard
+ * ✅ PERBAIKAN: Syntax Promise.all yang benar
  */
 export const getDashboardStats = async () => {
     try {
-        const [guruCount, siswaCount, ujianCount] = await Promise.all([
-            countDocuments("users").then(r => r.success ? 
-                (await getAllGuru()).data.length : 0,
-            countDocuments("users").then(r => r.success ? 
-                (await getAllSiswa()).data.length : 0,
+        const [guruRes, siswaRes, ujianRes] = await Promise.all([
+            getAllGuru(),
+            getAllSiswa(),
             countDocuments("ujian")
         ]);
         
         return {
             success: true,
             data: {
-                totalGuru: guruCount,
-                totalSiswa: siswaCount,
-                totalUjian: ujianCount.count
+                totalGuru: guruRes.success ? guruRes.data.length : 0,
+                totalSiswa: siswaRes.success ? siswaRes.data.length : 0,
+                totalUjian: ujianRes.success ? ujianRes.count : 0
             }
         };
     } catch (error) {
+        console.error("Error getting dashboard stats:", error);
         return { success: false, error: error.message };
     }
 };
 
 // ============================================
-// 🔧 FUNGSI UMUM
+// 🔧 FUNGSI UMUM CRUD (UPDATE)
 // ============================================
 
 /**
- * Tambah dokumen baru
+ * Tambah dokumen baru dengan auto-ID
  */
 export const addDocument = async (collectionName, data) => {
     try {
-        const docRef = await addDoc(collection(db, collectionName), data);
+        const docRef = await addDoc(collection(db, collectionName), {
+            ...data,
+            createdAt: serverTimestamp()
+        });
         return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Tambah/Set dokumen dengan ID spesifik
+ */
+export const setDocument = async (collectionName, docId, data) => {
+    try {
+        await setDoc(doc(db, collectionName, docId), {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+        return { success: true, id: docId };
     } catch (error) {
         return { success: false, error: error.message };
     }
@@ -276,7 +345,10 @@ export const addDocument = async (collectionName, data) => {
 export const updateDocument = async (collectionName, docId, data) => {
     try {
         const docRef = doc(db, collectionName, docId);
-        await updateDoc(docRef, data);
+        await updateDoc(docRef, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
         return { success: true };
     } catch (error) {
         return { success: false, error: error.message };
@@ -295,5 +367,28 @@ export const deleteDocument = async (collectionName, docId) => {
     }
 };
 
-// Export db dan auth untuk kebutuhan khusus
-export { db, auth };
+/**
+ * ✅ BARU: Query dengan limit & order
+ */
+export const getCollectionWithLimit = async (collectionName, orderByField = 'createdAt', orderDir = 'desc', limitCount = 10) => {
+    try {
+        const q = query(
+            collection(db, collectionName),
+            orderBy(orderByField, orderDir),
+            limit(limitCount)
+        );
+        const snapshot = await getDocs(q);
+        const list = [];
+        snapshot.forEach(doc => {
+            list.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, data: list };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// ============================================
+// 📦 EXPORT
+// ============================================
+export { db, auth, serverTimestamp };
