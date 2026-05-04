@@ -13,15 +13,15 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-        // ⚠️ GANTI DENGAN KONFIGURASI PROYEK FIREBASE ANDA
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+      const firebaseConfig = {
+  apiKey: "AIzaSyC45P_1xbNL8zi3e0aS4kHkIGvRvGEAmwM",
+  authDomain: "takkoandi-8e99e.firebaseapp.com",
+  databaseURL: "https://takkoandi-8e99e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "takkoandi-8e99e",
+  storageBucket: "takkoandi-8e99e.firebasestorage.app",
+  messagingSenderId: "117264025083",
+  appId: "1:117264025083:web:8102fe737f7783e1b7b75e"
+};
 
         const app = initializeApp(firebaseConfig);
         window.firebaseAuth = getAuth(app);
