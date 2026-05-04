@@ -184,7 +184,7 @@
         };
 
         // ============================================
-        // ✅ UPDATE: Login Handler dengan Router Guard
+        // ✅ UPDATE: Login Handler dengan Redirect Langsung (Tanpa fetch)
         // ============================================
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -226,41 +226,38 @@
                 nama: userData.nama
             }));
             
-            // ✅ REDIRECT ke halaman dashboard sesuai role
-            // Karena ini demo, kita redirect ke URL relatif
+            // ✅ REDIRECT LANGSUNG ke halaman dashboard sesuai role
+            // Tanpa fetch() agar kompatibel dengan file:// dan Live Server
             setTimeout(() => {
                 const targetPage = guardResult.redirect;
-                console.log('✅ Redirecting to:', `modules/${targetPage}.html`);
+                const targetUrl = `modules/${targetPage}.html`;
                 
-                // Cek apakah file dashboard ada (untuk debugging)
-                fetch(`modules/${targetPage}.html`)
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.href = `modules/${targetPage}.html`;
-                        } else {
-                            console.error('❌ File tidak ditemukan:', `modules/${targetPage}.html`);
-                            showError(`Halaman dashboard tidak ditemukan. Pastikan file modules/${targetPage}.html ada.`);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('❌ Error redirect:', err);
-                        showError('Gagal memuat dashboard. Cek console untuk detail.');
-                    });
-            }, 1000);
+                console.log('🔄 Redirecting to:', targetUrl);
+                
+                // Redirect langsung - browser akan handle 404 jika file tidak ada
+                window.location.href = targetUrl;
+            }, 800);
         });
 
         // ============================================
         // ✅ DEBUG: Log ke console untuk troubleshooting
         // ============================================
         console.log('🛡️ ExamShield Login Loaded');
-        console.log('📁 Struktur folder yang diharapkan:');
+        console.log('📁 Pastikan struktur folder seperti ini:');
         console.log('   root/');
-        console.log('   ├── index.html');
+        console.log('   ├── index.html          ← File ini');
         console.log('   ├── css/style.css');
         console.log('   └── modules/');
-        console.log('       ├── dashboard.html');
-        console.log('       ├── g-dashboard.html');
-        console.log('       └── s-dashboard.html');
+        console.log('       ├── dashboard.html  ← Harus ada untuk admin');
+        console.log('       ├── g-dashboard.html ← Harus ada untuk guru');
+        console.log('       └── s-dashboard.html ← Harus ada untuk siswa');
+        
+        // Tambahkan listener untuk mendeteksi error 404 setelah redirect
+        window.addEventListener('error', (e) => {
+            if (e.message?.includes('Failed to load') || e.message?.includes('404')) {
+                console.error('❌ Kemungkinan file dashboard tidak ditemukan di folder modules/');
+            }
+        }, true);
     </script>
 </body>
 </html>
