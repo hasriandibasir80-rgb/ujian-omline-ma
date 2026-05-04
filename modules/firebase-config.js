@@ -39,13 +39,13 @@ import {
 // 🔧 KONFIGURASI FIREBASE - GANTI DENGAN DATA ANDA
 // ============================================
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyC45P_1xbNL8zi3e0aS4kHkIGvRvGEAmwM",
+  authDomain: "takkoandi-8e99e.firebaseapp.com",
+  databaseURL: "https://takkoandi-8e99e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "takkoandi-8e99e",
+  storageBucket: "takkoandi-8e99e.firebasestorage.app",
+  messagingSenderId: "117264025083",
+  appId: "1:117264025083:web:8102fe737f7783e1b7b75e"
 };
 
 // ============================================
