@@ -4,58 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ExamShield</title>
-    <!-- CSS: path ke folder css/ -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* ✅ Tambahan style untuk transisi & feedback visual */
-        .page { display: none !important; }
-        .page.active { display: flex !important; animation: fadeIn 0.35s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
         
-        /* Toast notification */
-        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; min-width: 280px; font-size: 13px; font-weight: 500; animation: slideIn 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-        .toast-success { background: #064e3b; border: 1px solid #065f46; color: #6ee7b7; }
-        .toast-error { background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; }
-        .toast-warn { background: #451a03; border: 1px solid #78350f; color: #fcd34d; }
-        .toast-info { background: #1e3a5f; border: 1px solid #1e40af; color: #93c5fd; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        // Your Firebase Config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
         
-        /* Error message */
-        .error-message { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; text-align: center; display: none; }
-        .error-message.show { display: block; animation: shake 0.3s ease; }
-        @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         
-        /* Loading overlay */
-        #loading-overlay {
-            position: fixed; inset: 0; background: rgba(10,14,26,0.95);
-            display: none; align-items: center; justify-content: center;
-            flex-direction: column; gap: 16px; z-index: 9998;
-        }
-        #loading-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid rgba(79,142,247,0.3);
-            border-top-color: var(--accent, #4f8ef7); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+        // Export ke window agar bisa diakses dari script lain
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.query = query;
+        window.where = where;
+        window.getDocs = getDocs;
+    </script>
 </head>
 <body>
-
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- Loading Overlay (muncul saat redirect) -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div style="color: var(--text, #e8edf8); font-size: 14px;">Memuat dashboard...</div>
-    </div>
-
     <div class="login-container">
-        <!-- Logo & Header -->
         <div class="header">
             <div class="logo-icon">
                 <i class="fas fa-shield-alt"></i>
@@ -64,7 +54,6 @@
             <p>Sistem Ujian Online Anti-Curang</p>
         </div>
 
-        <!-- Role Selector -->
         <div class="role-tabs">
             <button class="tab-btn active" data-role="admin">
                 <i class="fas fa-crown"></i> Admin
@@ -77,11 +66,10 @@
             </button>
         </div>
 
-        <!-- Form Login -->
         <form id="loginForm">
             <div class="input-group">
-                <label for="username">USERNAME</label>
-                <input type="text" id="username" placeholder="Masukkan username" autocomplete="off">
+                <label for="username">USERNAME / EMAIL</label>
+                <input type="text" id="username" placeholder="Masukkan username atau email" autocomplete="off">
             </div>
 
             <div class="input-group">
@@ -92,104 +80,24 @@
                 </div>
             </div>
 
-            <!-- Error Message -->
-            <div id="login-error" class="error-message"></div>
+            <div id="login-error" class="error-message hidden"></div>
 
             <button type="submit" class="btn-login">
                 Masuk <i class="fas fa-arrow-right"></i>
             </button>
         </form>
 
-        <!-- Footer -->
         <div class="footer">
             <p>ExamShield v1.0 • Dilindungi enkripsi • Anti-curang aktif</p>
         </div>
     </div>
 
-    <!-- ✅ Script Login dengan Redirect yang Stabil -->
-    <script>
-        // ============================================
-        // ✅ INLINE ROUTER: PERMISSIONS
-        // ============================================
-        const ROLE_PERMISSIONS = {
-            admin: ['dashboard', 'data-guru', 'data-siswa', 'kelola-kelas', 'data-ujian', 'bank-soal', 'monitoring', 'rekap-nilai', 'analisis-butir', 'log-aktivitas', 'pengaturan'],
-            guru: ['g-dashboard', 'g-buat-ujian', 'g-bank-soal', 'g-ujian-aktif', 'g-analisis', 'g-hasil', 'g-monitoring', 'g-profil', 'g-pengaturan'],
-            siswa: ['s-dashboard', 's-ujian-tersedia', 's-hasil', 's-profil']
-        };
-
-        const DEFAULT_REDIRECT = { admin: 'dashboard', guru: 'g-dashboard', siswa: 's-dashboard' };
-
-        function canAccess(role, pageId) {
-            if (!role || !pageId) return false;
-            const allowed = ROLE_PERMISSIONS[role] || [];
-            return allowed.includes(pageId);
-        }
-
-        function getDefaultPage(role) {
-            return DEFAULT_REDIRECT[role] || 'dashboard';
-        }
-
-        function validateRoleSelection(selectedRole, userData) {
-            if (!userData || !userData.role) return false;
-            return userData.role === selectedRole;
-        }
-
-        // ============================================
-        // ✅ INLINE ROUTER: GUARD
-        // ============================================
-        function guardLogin(selectedRole, userData) {
-            if (!validateRoleSelection(selectedRole, userData)) {
-                return { allowed: false, message: 'Role tidak sesuai. Silakan pilih tab yang benar.', redirect: null };
-            }
-            const defaultPage = getDefaultPage(userData.role);
-            if (!canAccess(userData.role, defaultPage)) {
-                return { allowed: false, message: 'Akses ditolak: Role tidak memiliki izin akses sistem.', redirect: null };
-            }
-            return { allowed: true, message: 'Login berhasil', redirect: defaultPage };
-        }
-
-        // ============================================
-        // ✅ UI Helpers
-        // ============================================
-        function showToast(msg, type = 'info') {
-            const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type === 'warn' ? 'warn' : type}`;
-            toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
-
-        function showError(msg) {
-            const errEl = document.getElementById('login-error');
-            errEl.textContent = msg;
-            errEl.classList.add('show');
-            setTimeout(() => errEl.classList.remove('show'), 3000);
-        }
-
-        function showLoading(show) {
-            const overlay = document.getElementById('loading-overlay');
-            if (show) overlay.classList.add('show');
-            else overlay.classList.remove('show');
-        }
-
-        // ============================================
-        // ✅ Toggle Password
-        // ============================================
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            togglePassword.classList.toggle('fa-eye');
-            togglePassword.classList.toggle('fa-eye-slash');
-        });
-
-        // ============================================
-        // ✅ Role Selector
-        // ============================================
+    <script type="module">
+        import { firebaseAuth, firebaseDb, signInWithEmailAndPassword, onAuthStateChanged, doc, getDoc } from './modules/firebase-config.js';
+        
         let selectedRole = 'admin';
+        
+        // Role selector
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -197,111 +105,123 @@
                 selectedRole = btn.dataset.role;
             });
         });
-
-        // ============================================
-        // ✅ Mock Database (Ganti dengan Firestore nanti)
-        // ============================================
-        const DB = {
-            users: {
-                'admin': { password: '123456', role: 'admin', nama: 'Administrator', nip: 'ADMIN001' },
-                '198501012010011001': { password: 'Guru@123', role: 'guru', nama: 'Budi Santoso', nip: '198501012010011001', mapel: 'Matematika' },
-                'siswa001': { password: 'Siswa@1', role: 'siswa', nama: 'Ahmad Fauzi', nisn: '0012345678', kelas: 'XII IPA 1' },
-            }
-        };
-
-        // ============================================
-        // ✅ LOGIN HANDLER - REDIRECT STABIL
-        // ============================================
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        
+        // Toggle password
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+        
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
+            const errorEl = document.getElementById('login-error');
             
-            document.getElementById('login-error').classList.remove('show');
+            errorEl.classList.add('hidden');
             
             if (!username || !password) {
-                showError('Harap isi username dan password!');
+                showError('Harap isi username/email dan password!');
                 return;
             }
             
-            // Cek kredensial
-            const userData = DB.users[username];
-            
-            if (!userData || userData.password !== password || userData.role !== selectedRole) {
-                showError('Username atau password salah!');
-                return;
-            }
-            
-            // Validasi via Router Guard
-            const guardResult = guardLogin(selectedRole, userData);
-            
-            if (!guardResult.allowed) {
-                showError(guardResult.message);
-                return;
-            }
-            
-            // ✅ Login sukses
-            showToast(`Selamat datang, ${userData.nama}!`, 'success');
-            
-            // Simpan session ke localStorage (lebih stabil daripada sessionStorage untuk redirect)
-            const sessionData = {
-                uid: username,
-                role: userData.role,
-                nama: userData.nama,
-                mapel: userData.mapel || null,
-                kelas: userData.kelas || null,
-                loginTime: new Date().toISOString()
-            };
-            localStorage.setItem('examshield_session', JSON.stringify(sessionData));
-            
-            // Tampilkan loading, lalu redirect
-            showLoading(true);
-            
-            // ✅ REDIRECT LANGSUNG (tanpa fetch check yang bermasalah di file://)
-            setTimeout(() => {
-                const targetPage = guardResult.redirect;
-                const targetUrl = `modules/${targetPage}.html`;
+            try {
+                let email = username;
                 
-                console.log('🔄 Redirecting to:', targetUrl);
-                console.log('📦 Session data:', sessionData);
+                // Jika admin login, pastikan format email
+                if (selectedRole === 'admin' && !username.includes('@')) {
+                    // Auto-append domain jika admin input username saja
+                    email = username.includes('@') ? username : `${username}@examshield.id`;
+                }
                 
-                // Redirect
-                window.location.href = targetUrl;
+                // Login dengan Firebase Auth
+                const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+                const user = userCredential.user;
                 
-                // Fallback: jika redirect gagal dalam 3 detik, tampilkan error
+                // Ambil data user dari Firestore
+                const userDocRef = doc(firebaseDb, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    await signOut(firebaseAuth);
+                    showError('Data user tidak ditemukan di database!');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Validasi role
+                if (userData.role !== selectedRole) {
+                    await signOut(firebaseAuth);
+                    showError(`Role tidak sesuai! Anda terdaftar sebagai ${userData.role}.`);
+                    return;
+                }
+                
+                // Simpan session
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    role: userData.role,
+                    nama: userData.nama
+                }));
+                
+                // Redirect ke dashboard
+                showToast(`Selamat datang, ${userData.nama}!`);
                 setTimeout(() => {
-                    showLoading(false);
-                    if (window.location.href.includes('index.html') || window.location.href.endsWith('/')) {
-                        showError('Gagal memuat dashboard. Pastikan file modules/' + targetPage + '.html ada.');
-                    }
-                }, 3000);
+                    window.location.href = 'modules/dashboard.html';
+                }, 1000);
                 
-            }, 800);
+            } catch (error) {
+                console.error('Login error:', error);
+                let message = 'Login gagal! ';
+                
+                if (error.code === 'auth/user-not-found') {
+                    message += 'User tidak ditemukan.';
+                } else if (error.code === 'auth/wrong-password') {
+                    message += 'Password salah.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message += 'Email tidak valid.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    message += 'Terlalu banyak percobaan. Coba lagi nanti.';
+                } else {
+                    message += error.message;
+                }
+                
+                showError(message);
+            }
         });
-
-        // ============================================
-        // ✅ Debug Info di Console
-        // ============================================
-        console.log('🛡️ ExamShield Login Loaded');
-        console.log('📁 Struktur folder yang diharapkan:');
-        console.log('   root/');
-        console.log('   ├── index.html          ← File ini');
-        console.log('   ├── css/style.css');
-        console.log('   └── modules/');
-        console.log('       ├── dashboard.html  ← Admin');
-        console.log('       ├── g-dashboard.html ← Guru');
-        console.log('       └── s-dashboard.html ← Siswa');
         
-        // Cek apakah file dashboard ada (hanya untuk info, tidak memblokir redirect)
-        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-            fetch('modules/dashboard.html', { method: 'HEAD' })
-                .then(res => {
-                    if (!res.ok) console.warn('⚠️ modules/dashboard.html tidak ditemukan (404)');
-                    else console.log('✅ modules/dashboard.html ditemukan');
-                })
-                .catch(() => console.log('ℹ️ Tidak bisa cek file (mungkin CORS atau file://)'));
+        function showError(msg) {
+            const errorEl = document.getElementById('login-error');
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
         }
+        
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px;
+                background: #10b981; color: white;
+                padding: 12px 20px; border-radius: 8px;
+                font-size: 14px; z-index: 9999;
+            `;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Check auth state
+        onAuthStateChanged(firebaseAuth, (user) => {
+            if (user) {
+                // User sudah login, redirect ke dashboard
+                window.location.href = 'modules/dashboard.html';
+            }
+        });
     </script>
 </body>
 </html>
