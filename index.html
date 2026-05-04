@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ExamShield</title>
-    <!-- ARAHKAN KE FOLDER css/ -->
+    <!-- CSS: path ke folder css/ -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- Font Awesome untuk ikon -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ✅ Tambahan style untuk debugging & transisi halaman */
+        /* ✅ Tambahan style untuk transisi & feedback visual */
         .page { display: none !important; }
         .page.active { display: flex !important; animation: fadeIn 0.35s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Toast notification style */
+        /* Toast notification */
         #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
         .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; min-width: 280px; font-size: 13px; font-weight: 500; animation: slideIn 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
         .toast-success { background: #064e3b; border: 1px solid #065f46; color: #6ee7b7; }
@@ -23,16 +23,36 @@
         .toast-info { background: #1e3a5f; border: 1px solid #1e40af; color: #93c5fd; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        /* Error message style */
+        /* Error message */
         .error-message { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; text-align: center; display: none; }
         .error-message.show { display: block; animation: shake 0.3s ease; }
         @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+        
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed; inset: 0; background: rgba(10,14,26,0.95);
+            display: none; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px; z-index: 9998;
+        }
+        #loading-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(79,142,247,0.3);
+            border-top-color: var(--accent, #4f8ef7); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <!-- Toast Container -->
     <div id="toast-container"></div>
+
+    <!-- Loading Overlay (muncul saat redirect) -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color: var(--text, #e8edf8); font-size: 14px;">Memuat dashboard...</div>
+    </div>
 
     <div class="login-container">
         <!-- Logo & Header -->
@@ -72,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- ✅ Error Message Container -->
+            <!-- Error Message -->
             <div id="login-error" class="error-message"></div>
 
             <button type="submit" class="btn-login">
@@ -86,10 +106,10 @@
         </div>
     </div>
 
-    <!-- ✅ Script dengan Router Logic Inline (Tanpa Import) -->
+    <!-- ✅ Script Login dengan Redirect yang Stabil -->
     <script>
         // ============================================
-        // ✅ INLINE ROUTER: PERMISSIONS (Tanpa Import)
+        // ✅ INLINE ROUTER: PERMISSIONS
         // ============================================
         const ROLE_PERMISSIONS = {
             admin: ['dashboard', 'data-guru', 'data-siswa', 'kelola-kelas', 'data-ujian', 'bank-soal', 'monitoring', 'rekap-nilai', 'analisis-butir', 'log-aktivitas', 'pengaturan'],
@@ -115,7 +135,7 @@
         }
 
         // ============================================
-        // ✅ INLINE ROUTER: GUARD (Tanpa Import)
+        // ✅ INLINE ROUTER: GUARD
         // ============================================
         function guardLogin(selectedRole, userData) {
             if (!validateRoleSelection(selectedRole, userData)) {
@@ -129,7 +149,7 @@
         }
 
         // ============================================
-        // ✅ KODE LAMA: UI Helpers (DIPERTAHANKAN)
+        // ✅ UI Helpers
         // ============================================
         function showToast(msg, type = 'info') {
             const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
@@ -148,8 +168,14 @@
             setTimeout(() => errEl.classList.remove('show'), 3000);
         }
 
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            if (show) overlay.classList.add('show');
+            else overlay.classList.remove('show');
+        }
+
         // ============================================
-        // ✅ KODE LAMA: Toggle Password (DIPERTAHANKAN)
+        // ✅ Toggle Password
         // ============================================
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
@@ -161,7 +187,7 @@
         });
 
         // ============================================
-        // ✅ KODE LAMA: Role Selector (DIPERTAHANKAN)
+        // ✅ Role Selector
         // ============================================
         let selectedRole = 'admin';
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -173,7 +199,7 @@
         });
 
         // ============================================
-        // ✅ KODE LAMA: Mock Database (DIPERTAHANKAN)
+        // ✅ Mock Database (Ganti dengan Firestore nanti)
         // ============================================
         const DB = {
             users: {
@@ -184,7 +210,7 @@
         };
 
         // ============================================
-        // ✅ UPDATE: Login Handler dengan Redirect Langsung (Tanpa fetch)
+        // ✅ LOGIN HANDLER - REDIRECT STABIL
         // ============================================
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -192,7 +218,6 @@
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             
-            // Reset error
             document.getElementById('login-error').classList.remove('show');
             
             if (!username || !password) {
@@ -200,7 +225,7 @@
                 return;
             }
             
-            // Cek kredensial di DB mock
+            // Cek kredensial
             const userData = DB.users[username];
             
             if (!userData || userData.password !== password || userData.role !== selectedRole) {
@@ -208,7 +233,7 @@
                 return;
             }
             
-            // ✅ PANGGIL ROUTER GUARD untuk validasi akses
+            // Validasi via Router Guard
             const guardResult = guardLogin(selectedRole, userData);
             
             if (!guardResult.allowed) {
@@ -216,48 +241,67 @@
                 return;
             }
             
-            // ✅ Login berhasil - tampilkan toast
+            // ✅ Login sukses
             showToast(`Selamat datang, ${userData.nama}!`, 'success');
             
-            // Simpan session sederhana
-            sessionStorage.setItem('currentUser', JSON.stringify({
+            // Simpan session ke localStorage (lebih stabil daripada sessionStorage untuk redirect)
+            const sessionData = {
                 uid: username,
                 role: userData.role,
-                nama: userData.nama
-            }));
+                nama: userData.nama,
+                mapel: userData.mapel || null,
+                kelas: userData.kelas || null,
+                loginTime: new Date().toISOString()
+            };
+            localStorage.setItem('examshield_session', JSON.stringify(sessionData));
             
-            // ✅ REDIRECT LANGSUNG ke halaman dashboard sesuai role
-            // Tanpa fetch() agar kompatibel dengan file:// dan Live Server
+            // Tampilkan loading, lalu redirect
+            showLoading(true);
+            
+            // ✅ REDIRECT LANGSUNG (tanpa fetch check yang bermasalah di file://)
             setTimeout(() => {
                 const targetPage = guardResult.redirect;
                 const targetUrl = `modules/${targetPage}.html`;
                 
                 console.log('🔄 Redirecting to:', targetUrl);
+                console.log('📦 Session data:', sessionData);
                 
-                // Redirect langsung - browser akan handle 404 jika file tidak ada
+                // Redirect
                 window.location.href = targetUrl;
+                
+                // Fallback: jika redirect gagal dalam 3 detik, tampilkan error
+                setTimeout(() => {
+                    showLoading(false);
+                    if (window.location.href.includes('index.html') || window.location.href.endsWith('/')) {
+                        showError('Gagal memuat dashboard. Pastikan file modules/' + targetPage + '.html ada.');
+                    }
+                }, 3000);
+                
             }, 800);
         });
 
         // ============================================
-        // ✅ DEBUG: Log ke console untuk troubleshooting
+        // ✅ Debug Info di Console
         // ============================================
         console.log('🛡️ ExamShield Login Loaded');
-        console.log('📁 Pastikan struktur folder seperti ini:');
+        console.log('📁 Struktur folder yang diharapkan:');
         console.log('   root/');
         console.log('   ├── index.html          ← File ini');
         console.log('   ├── css/style.css');
         console.log('   └── modules/');
-        console.log('       ├── dashboard.html  ← Harus ada untuk admin');
-        console.log('       ├── g-dashboard.html ← Harus ada untuk guru');
-        console.log('       └── s-dashboard.html ← Harus ada untuk siswa');
+        console.log('       ├── dashboard.html  ← Admin');
+        console.log('       ├── g-dashboard.html ← Guru');
+        console.log('       └── s-dashboard.html ← Siswa');
         
-        // Tambahkan listener untuk mendeteksi error 404 setelah redirect
-        window.addEventListener('error', (e) => {
-            if (e.message?.includes('Failed to load') || e.message?.includes('404')) {
-                console.error('❌ Kemungkinan file dashboard tidak ditemukan di folder modules/');
-            }
-        }, true);
+        // Cek apakah file dashboard ada (hanya untuk info, tidak memblokir redirect)
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+            fetch('modules/dashboard.html', { method: 'HEAD' })
+                .then(res => {
+                    if (!res.ok) console.warn('⚠️ modules/dashboard.html tidak ditemukan (404)');
+                    else console.log('✅ modules/dashboard.html ditemukan');
+                })
+                .catch(() => console.log('ℹ️ Tidak bisa cek file (mungkin CORS atau file://)'));
+        }
     </script>
 </body>
 </html>
