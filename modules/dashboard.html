@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - ExamShield</title>
-    <!-- Menghubungkan CSS yang berada di folder root/css -->
+    <!-- CSS: path sudah benar (naik satu level ke root/css) -->
     <link rel="stylesheet" href="../css/dashboard.css">
-    <!-- Font Awesome untuk ikon -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -36,8 +36,6 @@
                 <a href="admin/monitoring-live.html" class="menu-item"><i class="fas fa-eye"></i> Monitoring Live</a>
                 <a href="#" class="menu-item"><i class="fas fa-chart-bar"></i> Analisis Soal</a>
                 <a href="#" class="menu-item"><i class="fas fa-cog"></i> Pengaturan</a>
-                
-                <!-- Link kembali ke Login untuk Logout -->
                 <a href="../index.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> Keluar</a>
             </nav>
         </aside>
@@ -50,63 +48,33 @@
                 <p>Selamat datang! Pantau seluruh aktivitas ujian dari sini.</p>
             </header>
 
-            <!-- Stats Cards (Statistik Ringkas) -->
+            <!-- ✅ Stats Cards: SATU set saja, dengan ID untuk Firebase -->
             <div class="stats-grid">
-              <div class="stats-grid">
-    <div class="stat-card">
-        <div class="icon"><i class="fas fa-users"></i></div>
-        <div class="info">
-            <h3 id="stat-guru">0</h3> <!-- Tambahkan id -->
-            <p>Total Guru</p>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="icon"><i class="fas fa-user-friends"></i></div>
-        <div class="info">
-            <h3 id="stat-siswa">0</h3> <!-- Tambahkan id -->
-            <p>Total Siswa</p>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="icon"><i class="fas fa-file-alt"></i></div>
-        <div class="info">
-            <h3 id="stat-ujian">0</h3> <!-- Tambahkan id -->
-            <p>Total Ujian</p>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="icon"><i class="fas fa-box-open"></i></div>
-        <div class="info">
-            <h3 id="stat-soal">0</h3> <!-- Tambahkan id -->
-            <p>Bank Soal</p>
-        </div>
-    </div>
-</div>  
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-users"></i></div>
                     <div class="info">
-                        <h3>2</h3>
+                        <h3 id="stat-guru">0</h3>
                         <p>Total Guru</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-user-friends"></i></div>
                     <div class="info">
-                        <h3>3</h3>
+                        <h3 id="stat-siswa">0</h3>
                         <p>Total Siswa</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-file-alt"></i></div>
                     <div class="info">
-                        <h3>2</h3>
+                        <h3 id="stat-ujian">0</h3>
                         <p>Total Ujian</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-box-open"></i></div>
                     <div class="info">
-                        <h3>6</h3>
+                        <h3 id="stat-soal">0</h3>
                         <p>Bank Soal</p>
                     </div>
                 </div>
@@ -121,40 +89,10 @@
                         <span class="live-badge">• LIVE</span>
                     </div>
                     <div class="card-body">
-                        <div class="student-row">
-                            <div class="student-info">
-                                <span class="dot green"></span>
-                                <span>Ahmad Fauzi</span>
-                                <small>UTS Matematika XII</small>
-                            </div>
-                            <div class="progress-wrap">
-                                <span>8/20 soal</span>
-                                <div class="progress-bar"><div class="fill" style="width: 40%;"></div></div>
-                            </div>
+                        <!-- Konten akan di-render oleh dashboard.js via onSnapshot -->
+                        <div id="monitoring-container">
+                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat data monitoring...</p>
                         </div>
-                        <div class="student-row">
-                            <div class="student-info">
-                                <span class="dot green"></span>
-                                <span>Bella Putri</span>
-                                <small>UTS Matematika XII</small>
-                            </div>
-                            <div class="progress-wrap">
-                                <span>12/20 soal</span>
-                                <div class="progress-bar"><div class="fill" style="width: 60%;"></div></div>
-                            </div>
-                        </div>
-                        <div class="student-row">
-                            <div class="student-info">
-                                <span class="dot yellow"></span>
-                                <span>Candra Wijaya</span>
-                                <small>UTS Matematika XII</small>
-                            </div>
-                            <div class="progress-wrap">
-                                <span>5/20 soal</span>
-                                <div class="progress-bar"><div class="fill" style="width: 25%;"></div></div>
-                            </div>
-                        </div>
-                        <a href="admin/monitoring-live.html" class="view-all">Lihat Semua →</a>
                     </div>
                 </div>
 
@@ -164,32 +102,28 @@
                         <h3><i class="fas fa-clock"></i> Ujian Aktif</h3>
                     </div>
                     <div class="card-body">
-                        <div class="exam-box">
-                            <h4>UTS Matematika XII IPA 1</h4>
-                            <p>XII IPA 1 • 90 menit</p>
-                            <div class="token-box">
-                                <span>Token:</span> <strong>HTK123</strong>
-                            </div>
+                        <!-- Konten akan di-render oleh dashboard.js -->
+                        <div id="active-exams-container">
+                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat ujian aktif...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Aksi Cepat (Quick Actions) -->
+            <!-- Aksi Cepat -->
             <div class="quick-actions">
                 <h3><i class="fas fa-bolt"></i> Aksi Cepat</h3>
                 <div class="actions-grid">
-                    <button class="action-btn"><i class="fas fa-plus"></i> Tambah Guru</button>
-                    <button class="action-btn"><i class="fas fa-plus"></i> Tambah Siswa</button>
-                    <button class="action-btn"><i class="fas fa-plus"></i> Buat Ujian</button>
-                    <button class="action-btn"><i class="fas fa-eye"></i> Lihat Monitoring</button>
+                    <button class="action-btn" data-action="tambah-guru"><i class="fas fa-plus"></i> Tambah Guru</button>
+                    <button class="action-btn" data-action="tambah-siswa"><i class="fas fa-plus"></i> Tambah Siswa</button>
+                    <button class="action-btn" data-action="buat-ujian"><i class="fas fa-plus"></i> Buat Ujian</button>
+                    <button class="action-btn" data-action="lihat-monitoring"><i class="fas fa-eye"></i> Lihat Monitoring</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Script -->
-    <script src="firebase-config.js"></script>
-    <script src="dashboard.js"></script>
+    <!-- ✅ Script: Gunakan type="module" untuk ES Modules -->
+    <script type="module" src="dashboard.js"></script>
 </body>
 </html>
