@@ -49,6 +49,8 @@
                 </div>
             </div>
 
+            <div id="login-error" class="error-message hidden"></div>
+
             <button type="submit" class="btn-login">
                 Masuk <i class="fas fa-arrow-right"></i>
             </button>
@@ -60,7 +62,180 @@
         </div>
     </div>
 
-    <!-- ARAHKAN KE FOLDER js/ -->
-    <script src="js/script.js"></script>
+    <!-- ✅ IMPORT ROUTER MODULES (Type Module untuk ES6 Import) -->
+    <script type="module">
+        // Import fungsi guard dari router
+        import { guardLogin } from './router/guard.js';
+        
+        // ============================================
+        // ✅ KODE LAMA: Logic Login (DIPERTAHANKAN)
+        // ============================================
+        
+        // Role selector
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        let selectedRole = 'admin';
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedRole = btn.dataset.role;
+            });
+        });
+        
+        // Toggle password visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.classList.toggle('fa-eye');
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+        
+        // ============================================
+        // ✅ UPDATE: Login Handler dengan Router Guard
+        // ============================================
+        
+        const loginForm = document.getElementById('loginForm');
+        const errorEl = document.getElementById('login-error');
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // Reset error
+            errorEl.classList.add('hidden');
+            errorEl.textContent = '';
+            
+            if (!username || !password) {
+                showError('Harap isi username dan password!');
+                return;
+            }
+            
+            // ========================================
+            // SIMULASI: Ambil userData dari DB/Firestore
+            // (Ganti dengan query Firestore yang sebenarnya nanti)
+            // ========================================
+            const userData = await fetchUserData(username, password);
+            
+            if (!userData) {
+                showError('Username atau password salah!');
+                return;
+            }
+            
+            // ✅ PANGGIL ROUTER GUARD untuk validasi akses
+            const guardResult = guardLogin(selectedRole, userData);
+            
+            if (!guardResult.allowed) {
+                showError(guardResult.message);
+                return;
+            }
+            
+            // ✅ Login berhasil - redirect ke halaman default role
+            showToast(`Selamat datang, ${userData.nama}!`);
+            
+            // Simpan session (bisa diganti dengan Firebase Auth session)
+            sessionStorage.setItem('currentUser', JSON.stringify({
+                uid: username, // Ganti dengan Firebase UID nanti
+                role: userData.role,
+                nama: userData.nama
+            }));
+            
+            // Redirect ke halaman dashboard sesuai role
+            setTimeout(() => {
+                window.location.href = `modules/${guardResult.redirect}.html`;
+            }, 1000);
+        });
+        
+        // ============================================
+        // ✅ KODE LAMA: Helper Functions (DIPERTAHANKAN)
+        // ============================================
+        
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
+            errorEl.style.animation = 'shake 0.3s ease';
+            setTimeout(() => errorEl.style.animation = '', 300);
+        }
+        
+        function showToast(msg) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px;
+                background: #10b981; color: white;
+                padding: 12px 20px; border-radius: 8px;
+                font-size: 14px; z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ============================================
+        // SIMULASI: Fetch User Data (Ganti dengan Firestore nanti)
+        // ============================================
+        async function fetchUserData(username, password) {
+            // ⚠️ INI HANYA SIMULASI - Ganti dengan query Firestore yang sebenarnya
+            // Contoh implementasi Firestore nanti:
+            /*
+            import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+            import { db } from './modules/firebase-config.js';
+            
+            const userDoc = await getDoc(doc(db, 'users', username));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                if (data.password === password) { // ⚠️ Password harus di-hash di production!
+                    return { ...data, id: username };
+                }
+            }
+            return null;
+            */
+            
+            // Data dummy untuk testing (HAPUS INI saat integrasi Firestore)
+            const mockUsers = {
+                'admin': { password: '123456', role: 'admin', nama: 'Administrator' },
+                'guru001': { password: 'guru123', role: 'guru', nama: 'Budi Santoso', mapel: 'Matematika' },
+                'siswa001': { password: 'siswa123', role: 'siswa', nama: 'Ahmad Fauzi', kelas: 'XII IPA 1' }
+            };
+            
+            const user = mockUsers[username];
+            if (user && user.password === password) {
+                return { ...user, id: username };
+            }
+            return null;
+        }
+        
+        // Animasi CSS untuk toast & error
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+            @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+            @keyframes slideOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(100%); opacity:0; } }
+            .error-message { 
+                background: rgba(239,68,68,0.15); 
+                border: 1px solid rgba(239,68,68,0.3); 
+                color: #fca5a5; 
+                padding: 10px 14px; 
+                border-radius: 8px; 
+                font-size: 13px; 
+                margin-bottom: 15px; 
+                text-align: center;
+            }
+            .hidden { display: none !important; }
+        `;
+        document.head.appendChild(style);
+    </script>
+    
+    <!-- Fallback untuk browser lama yang tidak support type="module" -->
+    <script nomodule src="js/script.js"></script>
 </body>
 </html>
