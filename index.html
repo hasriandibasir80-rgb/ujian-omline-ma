@@ -8,8 +8,31 @@
     <link rel="stylesheet" href="css/style.css">
     <!-- Font Awesome untuk ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ✅ Tambahan style untuk debugging & transisi halaman */
+        .page { display: none !important; }
+        .page.active { display: flex !important; animation: fadeIn 0.35s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Toast notification style */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; min-width: 280px; font-size: 13px; font-weight: 500; animation: slideIn 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .toast-success { background: #064e3b; border: 1px solid #065f46; color: #6ee7b7; }
+        .toast-error { background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; }
+        .toast-warn { background: #451a03; border: 1px solid #78350f; color: #fcd34d; }
+        .toast-info { background: #1e3a5f; border: 1px solid #1e40af; color: #93c5fd; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Error message style */
+        .error-message { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; text-align: center; display: none; }
+        .error-message.show { display: block; animation: shake 0.3s ease; }
+        @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+    </style>
 </head>
 <body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
     <div class="login-container">
         <!-- Logo & Header -->
@@ -49,7 +72,8 @@
                 </div>
             </div>
 
-            <div id="login-error" class="error-message hidden"></div>
+            <!-- ✅ Error Message Container -->
+            <div id="login-error" class="error-message"></div>
 
             <button type="submit" class="btn-login">
                 Masuk <i class="fas fa-arrow-right"></i>
@@ -62,67 +86,124 @@
         </div>
     </div>
 
-    <!-- ✅ IMPORT ROUTER MODULES (Type Module untuk ES6 Import) -->
-    <script type="module">
-        // Import fungsi guard dari router
-        import { guardLogin } from './router/guard.js';
-        
+    <!-- ✅ Script dengan Router Logic Inline (Tanpa Import) -->
+    <script>
         // ============================================
-        // ✅ KODE LAMA: Logic Login (DIPERTAHANKAN)
+        // ✅ INLINE ROUTER: PERMISSIONS (Tanpa Import)
         // ============================================
-        
-        // Role selector
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        let selectedRole = 'admin';
-        
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedRole = btn.dataset.role;
-            });
-        });
-        
-        // Toggle password visibility
+        const ROLE_PERMISSIONS = {
+            admin: ['dashboard', 'data-guru', 'data-siswa', 'kelola-kelas', 'data-ujian', 'bank-soal', 'monitoring', 'rekap-nilai', 'analisis-butir', 'log-aktivitas', 'pengaturan'],
+            guru: ['g-dashboard', 'g-buat-ujian', 'g-bank-soal', 'g-ujian-aktif', 'g-analisis', 'g-hasil', 'g-monitoring', 'g-profil', 'g-pengaturan'],
+            siswa: ['s-dashboard', 's-ujian-tersedia', 's-hasil', 's-profil']
+        };
+
+        const DEFAULT_REDIRECT = { admin: 'dashboard', guru: 'g-dashboard', siswa: 's-dashboard' };
+
+        function canAccess(role, pageId) {
+            if (!role || !pageId) return false;
+            const allowed = ROLE_PERMISSIONS[role] || [];
+            return allowed.includes(pageId);
+        }
+
+        function getDefaultPage(role) {
+            return DEFAULT_REDIRECT[role] || 'dashboard';
+        }
+
+        function validateRoleSelection(selectedRole, userData) {
+            if (!userData || !userData.role) return false;
+            return userData.role === selectedRole;
+        }
+
+        // ============================================
+        // ✅ INLINE ROUTER: GUARD (Tanpa Import)
+        // ============================================
+        function guardLogin(selectedRole, userData) {
+            if (!validateRoleSelection(selectedRole, userData)) {
+                return { allowed: false, message: 'Role tidak sesuai. Silakan pilih tab yang benar.', redirect: null };
+            }
+            const defaultPage = getDefaultPage(userData.role);
+            if (!canAccess(userData.role, defaultPage)) {
+                return { allowed: false, message: 'Akses ditolak: Role tidak memiliki izin akses sistem.', redirect: null };
+            }
+            return { allowed: true, message: 'Login berhasil', redirect: defaultPage };
+        }
+
+        // ============================================
+        // ✅ KODE LAMA: UI Helpers (DIPERTAHANKAN)
+        // ============================================
+        function showToast(msg, type = 'info') {
+            const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type === 'warn' ? 'warn' : type}`;
+            toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function showError(msg) {
+            const errEl = document.getElementById('login-error');
+            errEl.textContent = msg;
+            errEl.classList.add('show');
+            setTimeout(() => errEl.classList.remove('show'), 3000);
+        }
+
+        // ============================================
+        // ✅ KODE LAMA: Toggle Password (DIPERTAHANKAN)
+        // ============================================
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
-        
         togglePassword.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
             togglePassword.classList.toggle('fa-eye');
             togglePassword.classList.toggle('fa-eye-slash');
         });
-        
+
+        // ============================================
+        // ✅ KODE LAMA: Role Selector (DIPERTAHANKAN)
+        // ============================================
+        let selectedRole = 'admin';
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedRole = btn.dataset.role;
+            });
+        });
+
+        // ============================================
+        // ✅ KODE LAMA: Mock Database (DIPERTAHANKAN)
+        // ============================================
+        const DB = {
+            users: {
+                'admin': { password: '123456', role: 'admin', nama: 'Administrator', nip: 'ADMIN001' },
+                '198501012010011001': { password: 'Guru@123', role: 'guru', nama: 'Budi Santoso', nip: '198501012010011001', mapel: 'Matematika' },
+                'siswa001': { password: 'Siswa@1', role: 'siswa', nama: 'Ahmad Fauzi', nisn: '0012345678', kelas: 'XII IPA 1' },
+            }
+        };
+
         // ============================================
         // ✅ UPDATE: Login Handler dengan Router Guard
         // ============================================
-        
-        const loginForm = document.getElementById('loginForm');
-        const errorEl = document.getElementById('login-error');
-        
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             
             // Reset error
-            errorEl.classList.add('hidden');
-            errorEl.textContent = '';
+            document.getElementById('login-error').classList.remove('show');
             
             if (!username || !password) {
                 showError('Harap isi username dan password!');
                 return;
             }
             
-            // ========================================
-            // SIMULASI: Ambil userData dari DB/Firestore
-            // (Ganti dengan query Firestore yang sebenarnya nanti)
-            // ========================================
-            const userData = await fetchUserData(username, password);
+            // Cek kredensial di DB mock
+            const userData = DB.users[username];
             
-            if (!userData) {
+            if (!userData || userData.password !== password || userData.role !== selectedRole) {
                 showError('Username atau password salah!');
                 return;
             }
@@ -135,107 +216,51 @@
                 return;
             }
             
-            // ✅ Login berhasil - redirect ke halaman default role
-            showToast(`Selamat datang, ${userData.nama}!`);
+            // ✅ Login berhasil - tampilkan toast
+            showToast(`Selamat datang, ${userData.nama}!`, 'success');
             
-            // Simpan session (bisa diganti dengan Firebase Auth session)
+            // Simpan session sederhana
             sessionStorage.setItem('currentUser', JSON.stringify({
-                uid: username, // Ganti dengan Firebase UID nanti
+                uid: username,
                 role: userData.role,
                 nama: userData.nama
             }));
             
-            // Redirect ke halaman dashboard sesuai role
+            // ✅ REDIRECT ke halaman dashboard sesuai role
+            // Karena ini demo, kita redirect ke URL relatif
             setTimeout(() => {
-                window.location.href = `modules/${guardResult.redirect}.html`;
+                const targetPage = guardResult.redirect;
+                console.log('✅ Redirecting to:', `modules/${targetPage}.html`);
+                
+                // Cek apakah file dashboard ada (untuk debugging)
+                fetch(`modules/${targetPage}.html`)
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = `modules/${targetPage}.html`;
+                        } else {
+                            console.error('❌ File tidak ditemukan:', `modules/${targetPage}.html`);
+                            showError(`Halaman dashboard tidak ditemukan. Pastikan file modules/${targetPage}.html ada.`);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('❌ Error redirect:', err);
+                        showError('Gagal memuat dashboard. Cek console untuk detail.');
+                    });
             }, 1000);
         });
-        
+
         // ============================================
-        // ✅ KODE LAMA: Helper Functions (DIPERTAHANKAN)
+        // ✅ DEBUG: Log ke console untuk troubleshooting
         // ============================================
-        
-        function showError(msg) {
-            errorEl.textContent = msg;
-            errorEl.classList.remove('hidden');
-            errorEl.style.animation = 'shake 0.3s ease';
-            setTimeout(() => errorEl.style.animation = '', 300);
-        }
-        
-        function showToast(msg) {
-            // Simple toast notification
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px;
-                background: #10b981; color: white;
-                padding: 12px 20px; border-radius: 8px;
-                font-size: 14px; z-index: 9999;
-                animation: slideIn 0.3s ease;
-            `;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-        
-        // ============================================
-        // SIMULASI: Fetch User Data (Ganti dengan Firestore nanti)
-        // ============================================
-        async function fetchUserData(username, password) {
-            // ⚠️ INI HANYA SIMULASI - Ganti dengan query Firestore yang sebenarnya
-            // Contoh implementasi Firestore nanti:
-            /*
-            import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
-            import { db } from './modules/firebase-config.js';
-            
-            const userDoc = await getDoc(doc(db, 'users', username));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                if (data.password === password) { // ⚠️ Password harus di-hash di production!
-                    return { ...data, id: username };
-                }
-            }
-            return null;
-            */
-            
-            // Data dummy untuk testing (HAPUS INI saat integrasi Firestore)
-            const mockUsers = {
-                'admin': { password: '123456', role: 'admin', nama: 'Administrator' },
-                'guru001': { password: 'guru123', role: 'guru', nama: 'Budi Santoso', mapel: 'Matematika' },
-                'siswa001': { password: 'siswa123', role: 'siswa', nama: 'Ahmad Fauzi', kelas: 'XII IPA 1' }
-            };
-            
-            const user = mockUsers[username];
-            if (user && user.password === password) {
-                return { ...user, id: username };
-            }
-            return null;
-        }
-        
-        // Animasi CSS untuk toast & error
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
-            @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-            @keyframes slideOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(100%); opacity:0; } }
-            .error-message { 
-                background: rgba(239,68,68,0.15); 
-                border: 1px solid rgba(239,68,68,0.3); 
-                color: #fca5a5; 
-                padding: 10px 14px; 
-                border-radius: 8px; 
-                font-size: 13px; 
-                margin-bottom: 15px; 
-                text-align: center;
-            }
-            .hidden { display: none !important; }
-        `;
-        document.head.appendChild(style);
+        console.log('🛡️ ExamShield Login Loaded');
+        console.log('📁 Struktur folder yang diharapkan:');
+        console.log('   root/');
+        console.log('   ├── index.html');
+        console.log('   ├── css/style.css');
+        console.log('   └── modules/');
+        console.log('       ├── dashboard.html');
+        console.log('       ├── g-dashboard.html');
+        console.log('       └── s-dashboard.html');
     </script>
-    
-    <!-- Fallback untuk browser lama yang tidak support type="module" -->
-    <script nomodule src="js/script.js"></script>
 </body>
 </html>
