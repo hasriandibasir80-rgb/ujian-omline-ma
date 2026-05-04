@@ -48,7 +48,7 @@
                 <p>Selamat datang! Pantau seluruh aktivitas ujian dari sini.</p>
             </header>
 
-            <!-- ✅ Stats Cards: SATU set saja, dengan ID untuk Firebase -->
+            <!-- ✅ Stats Cards: SATU set saja, dengan ID untuk Firebase (TIDAK DIUBAH) -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-users"></i></div>
@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <!-- Content Grid: Monitoring & Ujian Aktif -->
+            <!-- Content Grid: Monitoring & Ujian Aktif (TIDAK DIUBAH) -->
             <div class="content-grid">
                 <!-- Monitoring Real-time -->
                 <div class="card">
@@ -89,7 +89,6 @@
                         <span class="live-badge">• LIVE</span>
                     </div>
                     <div class="card-body">
-                        <!-- Konten akan di-render oleh dashboard.js via onSnapshot -->
                         <div id="monitoring-container">
                             <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat data monitoring...</p>
                         </div>
@@ -102,7 +101,6 @@
                         <h3><i class="fas fa-clock"></i> Ujian Aktif</h3>
                     </div>
                     <div class="card-body">
-                        <!-- Konten akan di-render oleh dashboard.js -->
                         <div id="active-exams-container">
                             <p style="color: var(--text-muted); text-align: center; padding: 20px;">Memuat ujian aktif...</p>
                         </div>
@@ -110,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- Aksi Cepat -->
+            <!-- Aksi Cepat (TIDAK DIUBAH) -->
             <div class="quick-actions">
                 <h3><i class="fas fa-bolt"></i> Aksi Cepat</h3>
                 <div class="actions-grid">
@@ -120,10 +118,214 @@
                     <button class="action-btn" data-action="lihat-monitoring"><i class="fas fa-eye"></i> Lihat Monitoring</button>
                 </div>
             </div>
+
+            <!-- ======================================== -->
+            <!-- ✅ FITUR BARU DITAMBAHKAN DI BAWAH INI -->
+            <!-- ======================================== -->
+
+            <!-- Section 1: Log Aktivitas -->
+            <section class="dashboard-section" id="section-activity-log">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Log Aktivitas</h3>
+                        <div class="card-actions">
+                            <select id="filter-log-type" class="form-select-sm">
+                                <option value="all">Semua Aktivitas</option>
+                                <option value="login">Login</option>
+                                <option value="exam">Ujian</option>
+                                <option value="data">Data</option>
+                            </select>
+                            <button class="btn-sm" id="btn-refresh-log"><i class="fas fa-sync"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Waktu</th>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Aksi</th>
+                                        <th>Detail</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-log-body">
+                                    <!-- Data akan di-inject oleh dashboard.js -->
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">Memuat log aktivitas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <button class="btn-sm" id="btn-load-more-log">Muat Lebih Banyak</button>
+                            <span class="text-muted" id="log-count-info">0 entri</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Rekap Nilai -->
+            <section class="dashboard-section" id="section-grade-recap">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Rekap Nilai</h3>
+                        <div class="card-actions">
+                            <select id="filter-kelas-rekap" class="form-select-sm">
+                                <option value="all">Semua Kelas</option>
+                                <!-- Options akan di-generate dari Firestore -->
+                            </select>
+                            <select id="filter-ujian-rekap" class="form-select-sm">
+                                <option value="all">Semua Ujian</option>
+                                <!-- Options akan di-generate dari Firestore -->
+                            </select>
+                            <button class="btn-primary btn-sm" id="btn-export-nilai">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Ringkasan Statistik -->
+                        <div class="recap-summary" id="recap-summary-container">
+                            <div class="summary-item">
+                                <span class="label">Rata-rata</span>
+                                <span class="value" id="recap-avg">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Tertinggi</span>
+                                <span class="value highlight" id="recap-max">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Terendah</span>
+                                <span class="value" id="recap-min">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Siswa Lulus</span>
+                                <span class="value" id="recap-lulus">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Rekap -->
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Siswa</th>
+                                        <th>Kelas</th>
+                                        <th>Ujian</th>
+                                        <th>Nilai</th>
+                                        <th>Status</th>
+                                        <th>Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="grade-recap-body">
+                                    <!-- Data akan di-inject oleh dashboard.js -->
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Memuat rekap nilai...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Kelola Kelas -->
+            <section class="dashboard-section" id="section-class-manager">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-school"></i> Kelola Kelas</h3>
+                        <button class="btn-primary btn-sm" id="btn-tambah-kelas">
+                            <i class="fas fa-plus"></i> Tambah Kelas
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search & Filter -->
+                        <div class="class-filter">
+                            <input type="text" id="search-kelas" class="form-input" placeholder="Cari kelas...">
+                            <select id="filter-guru-kelas" class="form-select">
+                                <option value="all">Semua Wali Kelas</option>
+                                <!-- Options dari Firestore -->
+                            </select>
+                        </div>
+
+                        <!-- Grid Kelas -->
+                        <div id="class-list-grid" class="class-grid">
+                            <!-- Card kelas akan di-render oleh dashboard.js -->
+                            <div class="class-card placeholder">
+                                <p class="text-center text-muted">Memuat daftar kelas...</p>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="pagination" id="class-pagination">
+                            <!-- Tombol pagination akan di-generate JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
-    <!-- ✅ Script: Gunakan type="module" untuk ES Modules -->
+    <!-- Modal: Tambah/Edit Kelas (Hidden by default) -->
+    <div id="modal-kelas" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modal-kelas-title">Tambah Kelas Baru</h4>
+                <button class="modal-close" id="modal-kelas-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-kelas">
+                    <input type="hidden" id="kelas-id">
+                    <div class="form-group">
+                        <label for="kelas-nama">Nama Kelas *</label>
+                        <input type="text" id="kelas-nama" class="form-input" placeholder="Contoh: XII IPA 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-jenjang">Jenjang *</label>
+                        <select id="kelas-jenjang" class="form-select" required>
+                            <option value="">Pilih Jenjang</option>
+                            <option value="X">Kelas X</option>
+                            <option value="XI">Kelas XI</option>
+                            <option value="XII">Kelas XII</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-jurusan">Jurusan</label>
+                        <select id="kelas-jurusan" class="form-select">
+                            <option value="Umum">Umum</option>
+                            <option value="IPA">IPA</option>
+                            <option value="IPS">IPS</option>
+                            <option value="Bahasa">Bahasa</option>
+                            <option value="Agama">Agama</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-wali">Wali Kelas *</label>
+                        <select id="kelas-wali" class="form-select" required>
+                            <option value="">Pilih Guru</option>
+                            <!-- Options dari Firestore: data guru -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-siswa">Jumlah Siswa</label>
+                        <input type="number" id="kelas-siswa" class="form-input" min="0" value="0" readonly>
+                        <small class="text-muted">Dihitung otomatis dari data siswa</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-kelas-cancel">Batal</button>
+                <button class="btn-primary" id="modal-kelas-save">Simpan Kelas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Script: Gunakan type="module" untuk ES Modules (TIDAK DIUBAH) -->
     <script type="module" src="dashboard.js"></script>
 </body>
 </html>
