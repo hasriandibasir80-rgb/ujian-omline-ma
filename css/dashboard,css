@@ -23,6 +23,9 @@
     --radius-lg: 20px;
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+    
+    /* ✅ ADDITIVE: Touch target minimum untuk mobile */
+    --touch-target: 44px;
 }
 
 /* Reset & Base */
@@ -51,6 +54,12 @@ body {
     height: 100vh;
     overflow-y: auto;
     z-index: 100;
+    transition: transform 0.3s ease; /* ✅ ADDITIVE: untuk animasi toggle */
+}
+
+/* ✅ ADDITIVE: Sidebar collapsed state untuk mobile */
+.sidebar.collapsed {
+    transform: translateX(-100%);
 }
 
 .logo {
@@ -136,6 +145,12 @@ body {
     margin-left: 260px;
     padding: 30px;
     overflow-y: auto;
+    transition: margin-left 0.3s ease; /* ✅ ADDITIVE: untuk animasi toggle */
+}
+
+/* ✅ ADDITIVE: Saat sidebar collapsed, main content menyesuaikan */
+.sidebar.collapsed + .main-content {
+    margin-left: 0;
 }
 
 /* Header */
@@ -143,7 +158,30 @@ body {
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
+    position: relative; /* ✅ ADDITIVE: untuk posisi toggle button */
 }
+
+/* ✅ ADDITIVE: Sidebar Toggle Button - Mobile Only */
+.sidebar-toggle {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 101;
+    font-size: 1.2rem;
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .top-bar h1 {
     font-size: 1.6rem;
     font-weight: 600;
@@ -151,6 +189,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-left: 50px; /* ✅ ADDITIVE: ruang untuk toggle button di mobile */
 }
 .top-bar p { color: var(--text-muted); font-size: 0.95rem; }
 
@@ -360,6 +399,7 @@ body {
     gap: 8px;
     font-size: 0.9rem;
     font-weight: 500;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .action-btn:hover {
     background: var(--primary);
@@ -379,6 +419,13 @@ body {
     .menu-item { justify-content: center; padding: 12px; }
     .menu-item i { margin: 0; }
     .main-content { margin-left: 70px; padding: 20px; }
+    
+    /* ✅ ADDITIVE: Toggle button visible di mobile */
+    .sidebar-toggle { display: flex; }
+    .top-bar h1 { margin-left: 60px; }
+    
+    /* ✅ ADDITIVE: Saat sidebar collapsed di mobile, main content full width */
+    .sidebar.collapsed + .main-content { margin-left: 0; }
 }
 
 @media (max-width: 768px) {
@@ -401,6 +448,28 @@ body {
 .text-success { color: var(--success); }
 .hidden { display: none; }
 
+/* ✅ ADDITIVE: Empty state class (ganti inline style) */
+.empty-state {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+}
+
+/* ✅ ADDITIVE: Loading shimmer animation */
+.placeholder-skeleton {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    height: 20px;
+    margin: 10px 0;
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
 /* Loading State */
 .loading {
     display: flex;
@@ -420,6 +489,23 @@ body {
     margin-left: 10px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ✅ ADDITIVE: Aksesibilitas - focus visible */
+.sidebar-toggle:focus-visible,
+.menu-item:focus-visible,
+.action-btn:focus-visible,
+.form-select:focus-visible,
+.form-input:focus-visible,
+.btn-sm:focus-visible,
+.btn-primary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ✅ ADDITIVE: Toast exit animation class */
+.toast-exit {
+    animation: slideOut 0.3s ease forwards;
+}
 
 
 /* ======================================== */
@@ -447,6 +533,7 @@ body {
     font-size: 0.85rem;
     outline: none;
     transition: border 0.2s;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .form-select:focus, .form-select-sm:focus, .form-input:focus {
     border-color: var(--primary);
@@ -486,6 +573,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .btn-sm:hover {
     background: var(--primary);
@@ -504,6 +592,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .btn-primary:hover {
     background: var(--primary-hover);
@@ -518,6 +607,7 @@ body {
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
     cursor: pointer;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .btn-secondary:hover { background: var(--border); }
 
@@ -529,6 +619,7 @@ body {
     border-radius: var(--radius-sm);
     font-size: 0.8rem;
     cursor: pointer;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .btn-danger:hover {
     background: var(--accent);
@@ -543,6 +634,7 @@ body {
     border-radius: var(--radius-sm);
     font-size: 0.8rem;
     cursor: pointer;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .btn-info:hover {
     background: var(--info);
@@ -723,6 +815,7 @@ body {
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 0.8rem;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
 }
 .pagination button:hover, .pagination button.active {
     background: var(--primary);
@@ -741,6 +834,9 @@ body {
     align-items: center;
     padding: 20px;
 }
+.modal[aria-hidden="false"] { display: flex; } /* ✅ ADDITIVE: aksesibilitas */
+.modal[aria-hidden="true"] { display: none; }
+
 .modal-content {
     background: var(--card-bg);
     border-radius: var(--radius-md);
@@ -773,6 +869,11 @@ body {
     cursor: pointer;
     line-height: 1;
     padding: 0 5px;
+    min-height: var(--touch-target); /* ✅ ADDITIVE: mobile touch target */
+    min-width: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .modal-close:hover { color: var(--text-main); }
 
@@ -842,4 +943,16 @@ body {
         right: 10px;
         text-align: center;
     }
+}
+
+/* ✅ ADDITIVE: Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .live-badge { animation: none; }
+    .stat-card:hover { transform: none; }
+    .class-card:hover { transform: none; }
 }
