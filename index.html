@@ -4,218 +4,377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - ExamShield</title>
-    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <!-- ✅ Fonts & Libraries (dipertahankan dari original) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- ✅ CSS: Gunakan file eksternal untuk maintainability -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <!-- ✅ Inline CSS kritis untuk login page (mobile-first, ringan) -->
     <style>
-        /* ✅ Minimal CSS untuk login page (mobile-first) */
-        body { 
-            margin: 0; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        /* ===== UTILITIES (dari original, dipertahankan) ===== */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+        .mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; }
+        .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; }
+        .text-sm { font-size: 13px; } .text-xs { font-size: 11px; }
+        .text-muted { color: var(--text2, #8b9bbf); }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .bold { font-weight: 600; }
+
+        /* ===== LOGIN PAGE SPECIFIC ===== */
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg, #0a0e1a);
+            color: var(--text, #e8edf8);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            background: radial-gradient(ellipse at 30% 20%, rgba(79,142,247,0.12) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(110,231,183,0.08) 0%, transparent 50%),
+                        var(--bg, #0a0e1a);
         }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+        .login-brand { text-align: center; margin-bottom: 32px; }
+        .brand-icon {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, var(--accent, #4f8ef7), #7c3aed);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            box-shadow: 0 8px 32px rgba(79,142,247,0.35);
+        }
+        .brand-title {
+            font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff, var(--accent, #4f8ef7));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .brand-sub { color: var(--text2, #8b9bbf); font-size: 13px; margin-top: 4px; }
+
         .login-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px 24px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: var(--surface, #1a2238);
+            border: 1px solid var(--border, #2a3554);
+            border-radius: var(--radius, 12px);
+            padding: 32px;
+            box-shadow: var(--card-shadow, 0 4px 24px rgba(0,0,0,0.4));
         }
-        .login-header { text-align: center; margin-bottom: 24px; }
-        .login-header .logo { 
-            font-size: 2rem; 
-            color: #4361ee; 
-            margin-bottom: 8px; 
+
+        .role-tabs {
+            display: flex; gap: 8px; margin-bottom: 24px;
+            background: var(--bg2, #0f1526);
+            padding: 4px; border-radius: var(--radius-sm, 8px);
         }
+        .role-tab {
+            flex: 1; padding: 8px; border: none; border-radius: 6px;
+            background: transparent; color: var(--text2, #8b9bbf);
+            font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .role-tab.active {
+            background: var(--surface2, #1f2a42); color: var(--text, #e8edf8);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* ===== FORM & BUTTONS (dari original) ===== */
         .form-group { margin-bottom: 16px; }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 6px; 
-            font-weight: 500; 
-            color: #333; 
+        label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--text2, #8b9bbf); text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
         }
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
+        input[type="text"], input[type="password"] {
+            width: 100%; background: var(--bg2, #0f1526);
+            border: 1px solid var(--border, #2a3554); border-radius: var(--radius-sm, 8px);
+            padding: 10px 14px; color: var(--text, #e8edf8);
+            font-family: 'Sora', sans-serif; font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s; outline: none;
         }
-        .form-input:focus {
-            outline: none;
-            border-color: #4361ee;
+        input:focus { border-color: var(--accent, #4f8ef7); box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border: none; border-radius: var(--radius-sm, 8px);
+            font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; white-space: nowrap;
         }
         .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: #4361ee;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
+            background: linear-gradient(135deg, var(--accent, #4f8ef7), #7c3aed);
+            color: #fff; box-shadow: 0 4px 16px rgba(79,142,247,0.3);
         }
-        .btn-primary:hover { background: #3a56d4; }
-        .btn-primary:disabled { 
-            background: #ccc; 
-            cursor: not-allowed; 
-        }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 8px;
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,142,247,0.45); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn-full { width: 100%; justify-content: center; }
+        .btn-lg { padding: 13px 24px; font-size: 15px; }
+
+        /* ===== ALERT & TOAST ===== */
+        .alert {
+            padding: 12px 16px; border-radius: var(--radius-sm, 8px);
+            font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
             margin-bottom: 16px;
-            font-size: 0.9rem;
-            display: none;
         }
-        .error-message.show { display: block; }
-        .loading { 
-            text-align: center; 
-            color: #666; 
-            margin-top: 8px; 
+        .alert-danger {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
         }
-        /* Mobile adjustments */
+        #toast-container {
+            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; border-radius: var(--radius-sm, 8px);
+            min-width: 280px; font-size: 13px; font-weight: 500;
+            animation: slideIn 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        @keyframes slideIn { from { transform: translateX(100px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+        .toast-success { background: #064e3b; border: 1px solid #065f46; color: var(--accent2, #6ee7b7); }
+        .toast-error { background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; }
+        .toast-warn { background: #451a03; border: 1px solid #78350f; color: #fcd34d; }
+
+        /* ===== PASSWORD TOGGLE ===== */
+        .pw-wrap { position: relative; display: flex; align-items: center; }
+        .pw-wrap input { flex: 1; padding-right: 42px !important; }
+        .pw-toggle {
+            position: absolute; right: 10px; background: none; border: none;
+            cursor: pointer; font-size: 16px; color: var(--text3, #5a6a8a);
+            padding: 4px; border-radius: 4px; line-height: 1; transition: color 0.2s;
+        }
+        .pw-toggle:hover { color: var(--text, #e8edf8); }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .login-card { padding: 24px 20px; }
-            .login-header .logo { font-size: 1.5rem; }
+            .brand-title { font-size: 24px; }
+            .btn-lg { padding: 12px 20px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="login-header">
-            <div class="logo"><i class="fas fa-shield-alt"></i></div>
-            <h2>ExamShield Admin</h2>
-            <p class="text-muted">Masuk untuk mengelola sistem ujian</p>
+
+    <!-- ✅ TOAST CONTAINER (dipertahankan untuk UX feedback) -->
+    <div id="toast-container"></div>
+
+    <!-- ✅ LOGIN CONTAINER -->
+    <div class="login-container">
+        
+        <!-- Brand Header -->
+        <div class="login-brand">
+            <div class="brand-icon"><i class="fas fa-shield-alt"></i></div>
+            <div class="brand-title">ExamShield</div>
+            <div class="brand-sub">Sistem Ujian Online Anti-Curang</div>
         </div>
 
-        <div id="login-error" class="error-message" role="alert"></div>
+        <!-- Login Card -->
+        <div class="login-card">
+            
+            <!-- Role Tabs (UI only - backend handled by Firebase) -->
+            <div class="role-tabs">
+                <button class="role-tab active" data-role="admin" onclick="selectRole('admin', this)">
+                    <i class="fas fa-crown"></i> Admin
+                </button>
+                <button class="role-tab" data-role="guru" onclick="selectRole('guru', this)">
+                    <i class="fas fa-chalkboard-teacher"></i> Guru
+                </button>
+                <button class="role-tab" data-role="siswa" onclick="selectRole('siswa', this)">
+                    <i class="fas fa-user-graduate"></i> Siswa
+                </button>
+            </div>
 
-        <form id="login-form" novalidate>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    class="form-input" 
-                    placeholder="admin@examshield.id"
-                    required
-                    autocomplete="email"
-                >
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    class="form-input" 
-                    placeholder="••••••••"
-                    required
-                    autocomplete="current-password"
-                >
-            </div>
-            <button type="submit" class="btn-primary" id="btn-login">
-                <i class="fas fa-sign-in-alt"></i> Masuk
-            </button>
-            <div id="login-loading" class="loading" hidden>
-                <i class="fas fa-spinner fa-spin"></i> Memproses...
-            </div>
-        </form>
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-user">Username / NIP / NISN</label>
+                    <input type="text" id="login-user" class="form-input" 
+                           placeholder="Masukkan username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Password</label>
+                    <div class="pw-wrap">
+                        <input type="password" id="login-pass" class="form-input" 
+                               placeholder="Masukkan password" required autocomplete="current-password">
+                        <button type="button" class="pw-toggle" onclick="togglePassword('login-pass', this)" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
 
-        <p class="text-muted small" style="text-align:center;margin-top:20px;">
-            <i class="fas fa-lock"></i> Dilindungi Firebase Authentication
-        </p>
+                <!-- Error Message -->
+                <div id="login-error" class="alert alert-danger hidden" role="alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="login-error-msg">Username atau password tidak valid.</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+                <div id="login-loading" class="text-center text-muted text-sm mt-2 hidden">
+                    <i class="fas fa-spinner fa-spin"></i> Memproses...
+                </div>
+            </form>
+
+            <div class="divider mb-3"></div>
+            <p class="text-center text-xs text-muted">
+                <i class="fas fa-lock"></i> Dilindungi Firebase Authentication • ExamShield v1.0
+            </p>
+        </div>
     </div>
 
-    <!-- ✅ Firebase SDK (Modular) -->
+    <!-- ✅ FIREBASE SDK (Modular) -->
     <script type="module">
+        // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
         import { 
             getAuth, 
-            signInWithEmailAndPassword, 
-            onAuthStateChanged 
+            signInWithEmailAndPassword,
+            onAuthStateChanged
         } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
-      const firebaseConfig = {
-  apiKey: "AIzaSyC45P_1xbNL8zi3e0aS4kHkIGvRvGEAmwM",
-  authDomain: "takkoandi-8e99e.firebaseapp.com",
-  databaseURL: "https://takkoandi-8e99e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "takkoandi-8e99e",
-  storageBucket: "takkoandi-8e99e.firebasestorage.app",
-  messagingSenderId: "117264025083",
-  appId: "1:117264025083:web:8102fe737f7783e1b7b75e"
-};
+        // 🔧 Firebase Config (GANTI dengan config proyek Anda)
+        const firebaseConfig = {
+            apiKey: "AIzaSyC45P_1xbNL8zi3e0aS4kHkIGvRvGEAmwM",
+            authDomain: "ujian-omline-ma.firebaseapp.com",
+            projectId: "ujian-omline-ma",
+            storageBucket: "ujian-omline-ma.appspot.com",
+            messagingSenderId: "XXX",
+            appId: "XXX"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // ✅ Cek session: jika sudah login, langsung redirect ke dashboard
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('[Login] User sudah terautentikasi, redirect ke dashboard.html');
-                window.location.href = 'dashboard.html';
+        // ✅ Global functions for HTML onclick handlers
+        window.selectRole = function(role, el) {
+            document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            window.selectedRole = role;
+        };
+        window.selectedRole = 'admin';
+
+        window.togglePassword = function(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
             }
-        });
+        };
 
-        // ✅ Handle login form submit
-        const loginForm = document.getElementById('login-form');
-        const btnLogin = document.getElementById('btn-login');
-        const loginLoading = document.getElementById('login-loading');
-        const loginError = document.getElementById('login-error');
+        window.showToast = function(msg, type = 'info') {
+            const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type === 'warn' ? 'warn' : type}`;
+            toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        };
 
-        loginForm.addEventListener('submit', async (e) => {
+        // ✅ Handle Login - MULTI-FILE FLOW
+        window.handleLogin = async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('login-user').value.trim();
+            const password = document.getElementById('login-pass').value.trim();
+            const role = window.selectedRole;
             
-            // UI state: loading
+            const btnLogin = document.getElementById('btn-login');
+            const loginLoading = document.getElementById('login-loading');
+            const loginError = document.getElementById('login-error');
+            const loginErrorMsg = document.getElementById('login-error-msg');
+            
+            // UI: Loading state
             btnLogin.disabled = true;
-            loginLoading.hidden = false;
-            loginError.classList.remove('show');
-            loginError.textContent = '';
-
+            loginLoading.classList.remove('hidden');
+            loginError.classList.add('hidden');
+            
             try {
-                // 🔐 Login dengan Firebase Auth
-                await signInWithEmailAndPassword(auth, email, password);
+                // 🔐 Authenticate with Firebase
+                // Note: Firebase Auth uses email, so we map username→email if needed
+                // For demo: assume username is email or use custom claim for role
+                const email = username.includes('@') ? username : `${username}@examshield.local`;
                 
-                // ✅ Login sukses → redirect ke dashboard.html (MULTI-FILE)
-                console.log('[Login] Sukses, redirect ke dashboard.html');
-                window.location.href = 'dashboard.html';
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // ✅ Login success → Redirect to dashboard.html (MULTI-FILE)
+                showToast(`Selamat datang! Redirect ke dashboard...`, 'success');
+                
+                // Small delay for UX
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
                 
             } catch (error) {
-                // ❌ Login gagal → tampilkan error
                 console.error('[Login] Error:', error.code, error.message);
                 
+                // Map Firebase errors to user-friendly messages
                 let message = 'Gagal masuk. Silakan coba lagi.';
-                if (error.code === 'auth/invalid-credential') {
-                    message = 'Email atau password tidak valid.';
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    message = 'Username atau password tidak valid.';
+                } else if (error.code === 'auth/user-not-found') {
+                    message = 'Akun tidak ditemukan.';
                 } else if (error.code === 'auth/invalid-email') {
                     message = 'Format email tidak valid.';
                 } else if (error.code === 'auth/user-disabled') {
                     message = 'Akun ini telah dinonaktifkan.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    message = 'Terlalu banyak percobaan. Coba lagi nanti.';
                 }
                 
-                loginError.textContent = message;
-                loginError.classList.add('show');
+                loginErrorMsg.textContent = message;
+                loginError.classList.remove('hidden');
+                showToast(message, 'error');
+                
+                // Shake animation for error feedback
+                const form = document.getElementById('login-form');
+                form.style.animation = 'none';
+                form.offsetHeight; // reflow
+                form.style.animation = 'shake 0.3s ease';
                 
             } finally {
                 // Restore UI state
                 btnLogin.disabled = false;
-                loginLoading.hidden = true;
+                loginLoading.classList.add('hidden');
+            }
+        };
+
+        // ✅ Session Check: Jika sudah login, langsung redirect ke dashboard
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('[Index] User sudah login, redirect ke dashboard.html');
+                window.location.href = 'dashboard.html';
             }
         });
+
+        // Add shake animation dynamically
+        const style = document.createElement('style');
+        style.textContent = `@keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }`;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
