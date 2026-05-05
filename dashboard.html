@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - ExamShield</title>
+    <!-- CSS: path sudah benar (naik satu level ke root/css) -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>ExamShield</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <h4>Administrator</h4>
+                    <p>admin@examshield.id</p>
+                </div>
+            </div>
+
+            <nav class="menu">
+                <a href="dashboard.html" class="menu-item active"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="admin/data-guru.html" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> Data Guru</a>
+                <a href="admin/data-siswa.html" class="menu-item"><i class="fas fa-user-graduate"></i> Data Siswa</a>
+                <a href="admin/daftar-ujian.html" class="menu-item"><i class="fas fa-list-alt"></i> Daftar Ujian</a>
+                <a href="admin/bank-soal.html" class="menu-item"><i class="fas fa-database"></i> Bank Soal</a>
+                <a href="admin/monitoring-live.html" class="menu-item"><i class="fas fa-eye"></i> Monitoring Live</a>
+                <a href="#" class="menu-item"><i class="fas fa-chart-bar"></i> Analisis Soal</a>
+                
+                <!-- ✅ PERUBAHAN: Path Pengaturan diperbaiki -->
+                <a href="admin/pengaturan.html" class="menu-item"><i class="fas fa-cog"></i> Pengaturan</a>
+                
+                <a href="../index.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <!-- ✅ ADDITIVE: Sidebar Toggle Button untuk Mobile -->
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard Admin</h1>
+                <p>Selamat datang! Pantau seluruh aktivitas ujian dari sini.</p>
+            </header>
+
+            <!-- ✅ Stats Cards (TIDAK DIUBAH) -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <div class="info">
+                        <h3 id="stat-guru">0</h3>
+                        <p>Total Guru</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-user-friends"></i></div>
+                    <div class="info">
+                        <h3 id="stat-siswa">0</h3>
+                        <p>Total Siswa</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="info">
+                        <h3 id="stat-ujian">0</h3>
+                        <p>Total Ujian</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-box-open"></i></div>
+                    <div class="info">
+                        <h3 id="stat-soal">0</h3>
+                        <p>Bank Soal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid: Monitoring & Ujian Aktif (TIDAK DIUBAH) -->
+            <div class="content-grid">
+                <!-- Monitoring Real-time -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-broadcast-tower"></i> Monitoring Real-time</h3>
+                        <span class="live-badge">• LIVE</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="monitoring-container">
+                            <p class="empty-state">Memuat data monitoring...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ujian Aktif -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> Ujian Aktif</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="active-exams-container">
+                            <p class="empty-state">Memuat ujian aktif...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aksi Cepat (TIDAK DIUBAH) -->
+            <div class="quick-actions">
+                <h3><i class="fas fa-bolt"></i> Aksi Cepat</h3>
+                <div class="actions-grid">
+                    <button class="action-btn" data-action="tambah-guru"><i class="fas fa-plus"></i> Tambah Guru</button>
+                    <button class="action-btn" data-action="tambah-siswa"><i class="fas fa-plus"></i> Tambah Siswa</button>
+                    <button class="action-btn" data-action="buat-ujian"><i class="fas fa-plus"></i> Buat Ujian</button>
+                    <button class="action-btn" data-action="lihat-monitoring"><i class="fas fa-eye"></i> Lihat Monitoring</button>
+                </div>
+            </div>
+
+            <!-- Section 1: Log Aktivitas (TIDAK DIUBAH) -->
+            <section class="dashboard-section" id="section-activity-log">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Log Aktivitas</h3>
+                        <div class="card-actions">
+                            <select id="filter-log-type" class="form-select-sm">
+                                <option value="all">Semua Aktivitas</option>
+                                <option value="login">Login</option>
+                                <option value="exam">Ujian</option>
+                                <option value="data">Data</option>
+                            </select>
+                            <button class="btn-sm" id="btn-refresh-log"><i class="fas fa-sync"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Waktu</th>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Aksi</th>
+                                        <th>Detail</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-log-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">Memuat log aktivitas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <button class="btn-sm" id="btn-load-more-log">Muat Lebih Banyak</button>
+                            <span class="text-muted" id="log-count-info">0 entri</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Rekap Nilai (TIDAK DIUBAH) -->
+            <section class="dashboard-section" id="section-grade-recap">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Rekap Nilai</h3>
+                        <div class="card-actions">
+                            <select id="filter-kelas-rekap" class="form-select-sm">
+                                <option value="all">Semua Kelas</option>
+                            </select>
+                            <select id="filter-ujian-rekap" class="form-select-sm">
+                                <option value="all">Semua Ujian</option>
+                            </select>
+                            <button class="btn-primary btn-sm" id="btn-export-nilai">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="recap-summary" id="recap-summary-container">
+                            <div class="summary-item">
+                                <span class="label">Rata-rata</span>
+                                <span class="value" id="recap-avg">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Tertinggi</span>
+                                <span class="value highlight" id="recap-max">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Terendah</span>
+                                <span class="value" id="recap-min">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Siswa Lulus</span>
+                                <span class="value" id="recap-lulus">-</span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Siswa</th>
+                                        <th>Kelas</th>
+                                        <th>Ujian</th>
+                                        <th>Nilai</th>
+                                        <th>Status</th>
+                                        <th>Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="grade-recap-body">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">Memuat rekap nilai...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Kelola Kelas (TIDAK DIUBAH) -->
+            <section class="dashboard-section" id="section-class-manager">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-school"></i> Kelola Kelas</h3>
+                        <button class="btn-primary btn-sm" id="btn-tambah-kelas">
+                            <i class="fas fa-plus"></i> Tambah Kelas
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="class-filter">
+                            <input type="text" id="search-kelas" class="form-input" placeholder="Cari kelas...">
+                            <select id="filter-guru-kelas" class="form-select">
+                                <option value="all">Semua Wali Kelas</option>
+                            </select>
+                        </div>
+
+                        <div id="class-list-grid" class="class-grid">
+                            <div class="class-card placeholder">
+                                <p class="empty-state">Memuat daftar kelas...</p>
+                            </div>
+                        </div>
+
+                        <div class="pagination" id="class-pagination"></div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal: Tambah/Edit Kelas (TIDAK DIUBAH) -->
+    <div id="modal-kelas" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-kelas-title" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modal-kelas-title">Tambah Kelas Baru</h4>
+                <button class="modal-close" id="modal-kelas-close" aria-label="Tutup modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-kelas">
+                    <input type="hidden" id="kelas-id">
+                    <div class="form-group">
+                        <label for="kelas-nama">Nama Kelas *</label>
+                        <input type="text" id="kelas-nama" class="form-input" placeholder="Contoh: XII IPA 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-jenjang">Jenjang *</label>
+                        <select id="kelas-jenjang" class="form-select" required>
+                            <option value="">Pilih Jenjang</option>
+                            <option value="X">Kelas X</option>
+                            <option value="XI">Kelas XI</option>
+                            <option value="XII">Kelas XII</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-jurusan">Jurusan</label>
+                        <select id="kelas-jurusan" class="form-select">
+                            <option value="Umum">Umum</option>
+                            <option value="IPA">IPA</option>
+                            <option value="IPS">IPS</option>
+                            <option value="Bahasa">Bahasa</option>
+                            <option value="Agama">Agama</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-wali">Wali Kelas *</label>
+                        <select id="kelas-wali" class="form-select" required>
+                            <option value="">Pilih Guru</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas-siswa">Jumlah Siswa</label>
+                        <input type="number" id="kelas-siswa" class="form-input" min="0" value="0" readonly>
+                        <small class="text-muted">Dihitung otomatis dari data siswa</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-kelas-cancel">Batal</button>
+                <button class="btn-primary" id="modal-kelas-save">Simpan Kelas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Script (TIDAK DIUBAH) -->
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>
