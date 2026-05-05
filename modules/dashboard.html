@@ -35,7 +35,10 @@
                 <a href="admin/bank-soal.html" class="menu-item"><i class="fas fa-database"></i> Bank Soal</a>
                 <a href="admin/monitoring-live.html" class="menu-item"><i class="fas fa-eye"></i> Monitoring Live</a>
                 <a href="#" class="menu-item"><i class="fas fa-chart-bar"></i> Analisis Soal</a>
-                <a href="#" class="menu-item"><i class="fas fa-cog"></i> Pengaturan</a>
+                
+                <!-- ✅ PERUBAHAN: Path Pengaturan diperbaiki -->
+                <a href="admin/pengaturan.html" class="menu-item"><i class="fas fa-cog"></i> Pengaturan</a>
+                
                 <a href="../index.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> Keluar</a>
             </nav>
         </aside>
@@ -53,7 +56,7 @@
                 <p>Selamat datang! Pantau seluruh aktivitas ujian dari sini.</p>
             </header>
 
-            <!-- ✅ Stats Cards: SATU set saja, dengan ID untuk Firebase (TIDAK DIUBAH) -->
+            <!-- ✅ Stats Cards (TIDAK DIUBAH) -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-users"></i></div>
@@ -95,7 +98,6 @@
                     </div>
                     <div class="card-body">
                         <div id="monitoring-container">
-                            <!-- ✅ ADDITIVE: Ganti inline style dengan class -->
                             <p class="empty-state">Memuat data monitoring...</p>
                         </div>
                     </div>
@@ -108,7 +110,6 @@
                     </div>
                     <div class="card-body">
                         <div id="active-exams-container">
-                            <!-- ✅ ADDITIVE: Ganti inline style dengan class -->
                             <p class="empty-state">Memuat ujian aktif...</p>
                         </div>
                     </div>
@@ -126,11 +127,7 @@
                 </div>
             </div>
 
-            <!-- ======================================== -->
-            <!-- ✅ FITUR BARU DITAMBAHKAN DI BAWAH INI -->
-            <!-- ======================================== -->
-
-            <!-- Section 1: Log Aktivitas -->
+            <!-- Section 1: Log Aktivitas (TIDAK DIUBAH) -->
             <section class="dashboard-section" id="section-activity-log">
                 <div class="card">
                     <div class="card-header">
@@ -159,7 +156,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="activity-log-body">
-                                    <!-- Data akan di-inject oleh dashboard.js -->
                                     <tr>
                                         <td colspan="6" class="empty-state">Memuat log aktivitas...</td>
                                     </tr>
@@ -174,7 +170,7 @@
                 </div>
             </section>
 
-            <!-- Section 2: Rekap Nilai -->
+            <!-- Section 2: Rekap Nilai (TIDAK DIUBAH) -->
             <section class="dashboard-section" id="section-grade-recap">
                 <div class="card">
                     <div class="card-header">
@@ -182,11 +178,9 @@
                         <div class="card-actions">
                             <select id="filter-kelas-rekap" class="form-select-sm">
                                 <option value="all">Semua Kelas</option>
-                                <!-- Options akan di-generate dari Firestore -->
                             </select>
                             <select id="filter-ujian-rekap" class="form-select-sm">
                                 <option value="all">Semua Ujian</option>
-                                <!-- Options akan di-generate dari Firestore -->
                             </select>
                             <button class="btn-primary btn-sm" id="btn-export-nilai">
                                 <i class="fas fa-download"></i> Export
@@ -194,7 +188,6 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Ringkasan Statistik -->
                         <div class="recap-summary" id="recap-summary-container">
                             <div class="summary-item">
                                 <span class="label">Rata-rata</span>
@@ -214,7 +207,6 @@
                             </div>
                         </div>
 
-                        <!-- Tabel Rekap -->
                         <div class="table-responsive">
                             <table class="data-table">
                                 <thead>
@@ -229,7 +221,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="grade-recap-body">
-                                    <!-- Data akan di-inject oleh dashboard.js -->
                                     <tr>
                                         <td colspan="7" class="empty-state">Memuat rekap nilai...</td>
                                     </tr>
@@ -240,7 +231,7 @@
                 </div>
             </section>
 
-            <!-- Section 3: Kelola Kelas -->
+            <!-- Section 3: Kelola Kelas (TIDAK DIUBAH) -->
             <section class="dashboard-section" id="section-class-manager">
                 <div class="card">
                     <div class="card-header">
@@ -250,27 +241,20 @@
                         </button>
                     </div>
                     <div class="card-body">
-                        <!-- Search & Filter -->
                         <div class="class-filter">
                             <input type="text" id="search-kelas" class="form-input" placeholder="Cari kelas...">
                             <select id="filter-guru-kelas" class="form-select">
                                 <option value="all">Semua Wali Kelas</option>
-                                <!-- Options dari Firestore -->
                             </select>
                         </div>
 
-                        <!-- Grid Kelas -->
                         <div id="class-list-grid" class="class-grid">
-                            <!-- Card kelas akan di-render oleh dashboard.js -->
                             <div class="class-card placeholder">
                                 <p class="empty-state">Memuat daftar kelas...</p>
                             </div>
                         </div>
 
-                        <!-- Pagination -->
-                        <div class="pagination" id="class-pagination">
-                            <!-- Tombol pagination akan di-generate JS -->
-                        </div>
+                        <div class="pagination" id="class-pagination"></div>
                     </div>
                 </div>
             </section>
@@ -278,8 +262,7 @@
         </main>
     </div>
 
-    <!-- Modal: Tambah/Edit Kelas (Hidden by default) -->
-    <!-- ✅ ADDITIVE: Tambahkan atribut aksesibilitas -->
+    <!-- Modal: Tambah/Edit Kelas (TIDAK DIUBAH) -->
     <div id="modal-kelas" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-kelas-title" hidden>
         <div class="modal-content">
             <div class="modal-header">
@@ -316,7 +299,6 @@
                         <label for="kelas-wali">Wali Kelas *</label>
                         <select id="kelas-wali" class="form-select" required>
                             <option value="">Pilih Guru</option>
-                            <!-- Options dari Firestore: data guru -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -333,7 +315,7 @@
         </div>
     </div>
 
-    <!-- ✅ Script: Gunakan type="module" untuk ES Modules (TIDAK DIUBAH) -->
+    <!-- ✅ Script (TIDAK DIUBAH) -->
     <script type="module" src="dashboard.js"></script>
 </body>
 </html>
